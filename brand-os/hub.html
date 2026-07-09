@@ -34,7 +34,7 @@
   }
   .hero-btn {
     display: inline-flex; align-items: center; gap: 10px;
-    padding: 12px 20px;
+    height: 40px; padding: 0 20px;
     border: 1px solid var(--sc-hairline-strong);
     border-radius: 999px;
     color: var(--sc-ink);
@@ -55,13 +55,14 @@
   .hero-btn.compound { padding-right: 8px; }
   .info-i {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 1px solid var(--sc-mist);
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--sc-hairline-strong);
     color: var(--sc-mist);
-    font-family: var(--font-mono); font-size: 10px;
+    font-family: var(--font-mono); font-size: 11px;
     cursor: help;
     position: relative;
     margin-left: 4px;
+    box-sizing: border-box;
   }
   .info-i:hover { color: var(--sc-ink); border-color: var(--sc-ink); }
   .info-i:hover::after {
@@ -124,7 +125,7 @@
 <div class="sc-page">
   <header class="sc-topbar">
     <div class="left"><span class="sc-wordmark">Spacecadet Studio<span class="plus">+</span></span></div>
-    <div class="center" id="brandTag">— · Brand OS</div>
+    <div class="center">Brand OS</div>
     <div class="right sc-meta-lines">NYC, Planet Earth
 <span class="sc-clock">00:00:00</span></div>
   </header>
@@ -132,7 +133,6 @@
   <main style="align-self: stretch; max-width: 1240px; width: 100%; margin: 0 auto;">
     <div class="hero-row">
       <div class="hero-text">
-        <div class="sc-eyebrow">Brand OS</div>
         <h1 class="hub-title" id="heroBrand">—</h1>
       </div>
       <nav class="hero-nav">
@@ -169,7 +169,7 @@
   <footer class="sc-botbar">
     <div class="left"><a href="#" id="logout" class="sc-pill small mono">Sign out</a></div>
     <div class="center"></div>
-    <div class="right"><a href="/" class="sc-pill small mono">← Explore</a></div>
+    <div class="right"><a href="mailto:john@spacecadet.studio" class="sc-pill small mono">Contact</a></div>
   </footer>
 </div>
 
@@ -194,7 +194,6 @@
       if (!r.ok) throw new Error(b.error || 'Load failed');
 
       const name = (b.name || slug).toString();
-      document.getElementById('brandTag').textContent = `${name.toUpperCase()} · Brand OS`;
       document.getElementById('heroBrand').textContent = name;
       renderTopNav(b.assets || {});
     } catch (e) {
