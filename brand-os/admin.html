@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio · Brand OS Admin</title>
+<link rel="stylesheet" href="/brand-os/style.css">
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+  .dropzone {
+    border: 1px dashed var(--sc-hairline-strong);
+    padding: var(--space-8); text-align: center;
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: var(--tracking-mono); text-transform: uppercase;
+    color: var(--sc-mist); cursor: pointer;
+    transition: background var(--dur-fast) var(--ease);
+  }
+  .dropzone.hover { background: rgba(255,255,255,0.06); color: var(--sc-ink); }
+  .swatch {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; border-radius: var(--radius-pill);
+    border: 1px solid var(--sc-hairline-strong);
+    font-family: var(--font-mono); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--sc-ink);
+  }
+  .swatch .chip { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--sc-hairline-strong); }
+  .brand-row {
+    display: grid; grid-template-columns: 1fr auto auto auto;
+    gap: var(--space-4); align-items: center;
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--sc-hairline);
+    border-radius: var(--radius-md);
+    text-decoration: none; color: var(--sc-ink);
+    transition: border-color var(--dur-fast) var(--ease),
+                background var(--dur-fast) var(--ease);
+  }
+  .brand-row:hover {
+    border-color: var(--sc-hairline-strong);
+    background: rgba(255,255,255,0.04); opacity: 1;
+  }
+  .brand-row .name { font-family: var(--font-display); font-size: 20px; color: var(--sc-white); }
+  .brand-row .slug,
+  .brand-row .updated {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: var(--tracking-mono); text-transform: uppercase;
+    color: var(--sc-mist);
+  }
+  .brand-row .arrow { font-family: var(--font-mono); font-size: 14px; color: var(--sc-mist); }
+  .prompt-box {
+    background: var(--sc-void); color: var(--sc-mist);
+    border: 1px solid var(--sc-hairline);
+    border-radius: var(--radius-md);
+    padding: 18px; font-family: var(--font-mono);
+    font-size: 12px; line-height: 1.55;
+    max-height: 320px; overflow: auto; white-space: pre-wrap;
+  }
+  .prompt-box strong { color: var(--sc-ink); font-weight: 700; }
+  select {
+    background: transparent;
+    color: var(--sc-ink);
+    border: 1px solid var(--sc-hairline-strong);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-family: var(--font-display); font-size: 15px;
+  }
+  select:focus { outline: none; border-color: var(--sc-ink); }
+</style>
+</head>
+<body>
+<div class="sc-page">
+  <header class="sc-topbar">
+    <div class="left"><span class="sc-wordmark">Spacecadet Studio<span class="plus">+</span></span></div>
+    <div class="center" id="pageTag">Studio · Admin</div>
+    <div class="right sc-meta-lines">NYC, Planet Earth
+<span class="sc-clock">00:00:00</span></div>
+  </header>
+
+  <!-- LIST VIEW -->
+  <main id="listView" style="align-self: center; max-width: 1100px; width: 100%; display: flex; flex-direction: column; gap: var(--space-6);">
+    <div class="sc-row" style="justify-content: space-between; align-items: baseline;">
+      <div>
+        <div class="sc-eyebrow">All brands · edit or create</div>
+        <h1 class="sc-h1" style="margin-top: 6px;">Brands.</h1>
+      </div>
+      <a class="sc-pill solid" href="?slug=__new__">＋ New brand</a>
+    </div>
+
+    <div id="brandsList" style="display: flex; flex-direction: column; gap: var(--space-3);">
+      <div class="sc-status">Loading…</div>
+    </div>
+  </main>
+
+  <!-- EDITOR VIEW -->
+  <main id="editorView" style="display: none; align-self: center; max-width: 1100px; width: 100%; flex-direction: column; gap: var(--space-6);">
+    <div class="sc-row" style="justify-content: space-between;">
+      <div>
+        <div class="sc-eyebrow" id="editorMode">Editing</div>
+        <h1 class="sc-h1" id="editorTitle" style="margin-top: 6px;">—</h1>
+      </div>
+      <a class="sc-pill mono small" href="/brand-os/admin">← All brands</a>
+    </div>
+
+    <div class="sc-navrow">
+      <button class="sc-pill mono small active" data-tab="fields">Config</button>
+      <button class="sc-pill mono small" data-tab="assets">Assets</button>
+      <button class="sc-pill mono small" data-tab="prompts">Prompts</button>
+      <button class="sc-pill mono small" data-tab="usage">Usage</button>
+      <button class="sc-pill mono small" data-tab="zip">Upload zip</button>
+    </div>
+    <div class="sc-navrow" style="margin-top: 4px;">
+      <a class="sc-pill mono small" id="enterHubLink" href="#">Enter hub →</a>
+      <a class="sc-pill mono small" id="enterWorkshopLink" href="#">Legacy workshop →</a>
+    </div>
+
+    <section id="tab-zip" style="display: none; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-eyebrow">Design system or strategy deck</div>
+        <div class="dropzone" id="drop">Drop a Claude Design zip, or a .md / .txt strategy doc — click to pick</div>
+        <input type="file" id="picker" accept=".zip,.md,.txt,.markdown" style="display:none">
+        <div class="sc-status" id="zipStatus"></div>
+        <div class="sc-eyebrow">Pulls palette + voice from design-system zips, and positioning / audience / products / belief from markdown or text with those headings.</div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">Or paste strategy synthesis</div>
+        <div class="sc-field"><label>Markdown, notes, or bullets</label>
+          <textarea id="pastedStrategy" style="min-height: 220px;" placeholder="## Positioning&#10;...&#10;&#10;## Audience&#10;...&#10;&#10;## Products&#10;- Name — description&#10;&#10;## Core belief&#10;..."></textarea></div>
+        <div class="sc-row">
+          <button class="sc-pill mono small" id="parsePaste">Parse into strategy fields</button>
+        </div>
+        <div class="sc-eyebrow">Recognizes headings named Positioning, Audience, Products, Belief / North star, Voice, Photography — anything else is ignored.</div>
+      </div>
+    </section>
+
+    <section id="tab-assets" style="display: none; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-eyebrow">Asset library · Drive / Frame.io / any URL</div>
+        <div class="sc-field mono">
+          <label>Asset library URL</label>
+          <input id="asset_library" placeholder="https://drive.google.com/...">
+        </div>
+      </div>
+
+      <div class="sc-card">
+        <div class="sc-eyebrow">PDF guidelines · one or many files</div>
+        <div id="pdfList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        <div class="sc-row">
+          <button class="sc-pill mono small" id="pdfUploadBtn">Upload PDF</button>
+          <button class="sc-pill mono small" id="pdfAddUrlBtn">Add by URL</button>
+        </div>
+      </div>
+
+      <div class="sc-card">
+        <div class="sc-eyebrow">Guidelines ZIP · the machine-ready bundle for Claude Design / Cowork / Code</div>
+        <div class="sc-field mono">
+          <label>Guidelines ZIP URL</label>
+          <div style="display:grid; grid-template-columns: 1fr auto; gap: 8px;">
+            <input id="asset_zip" placeholder="https://... or upload">
+            <button class="sc-pill mono small" data-upload="zip" data-accept="application/zip,application/x-zip-compressed" data-prefix="brand-os/assets">Upload ZIP</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sc-status" id="assetsStatus"></div>
+    </section>
+
+    <section id="tab-usage" style="display: none; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-row" style="justify-content: space-between; align-items: baseline;">
+          <div class="sc-eyebrow">All time · this brand</div>
+          <div class="sc-h2" id="usageTotal">$0.00</div>
+        </div>
+        <div class="sc-eyebrow">Rolling 6 months, billed to the org Anthropic + Magnific accounts. Magnific credit cost is an estimate — actuals depend on your plan tier.</div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">By month</div>
+        <div id="usageMonths" style="display:flex; flex-direction:column; gap: 6px;">Loading…</div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">Recent events (current month, newest first)</div>
+        <div id="usageEvents" style="display:flex; flex-direction:column; gap: 4px;">Loading…</div>
+      </div>
+    </section>
+
+    <section id="tab-prompts" style="display: none; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-eyebrow">Compiled Copywriter system prompt</div>
+        <div class="sc-row"><span class="sc-eyebrow">Model:</span><span class="sc-pill mono small" id="pmodel1">—</span></div>
+        <div class="prompt-box" id="prompt1">Loading…</div>
+        <div class="sc-eyebrow">This is exactly what's sent to Claude as the <strong>system</strong> message. <code>{TASK}</code> is replaced with the preset (or word-count instruction) at request time.</div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">Compiled Art Director prompt template</div>
+        <div class="sc-row"><span class="sc-eyebrow">Model:</span><span class="sc-pill mono small" id="pmodel2">—</span></div>
+        <div class="prompt-box" id="prompt2">Loading…</div>
+        <div class="sc-eyebrow">Sent as <code>prompt</code> to Magnific Mystic. <code>{USER_PROMPT}</code> = client input, <code>{PRESET_HINT}</code> = selected shot preset hint.</div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">Full Magnific API params</div>
+        <pre class="sc-json" id="apiParams">—</pre>
+      </div>
+    </section>
+
+    <section id="tab-fields" style="display: flex; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-eyebrow">Brand</div>
+        <div class="sc-grid-2">
+          <div class="sc-field"><label>Name</label><input id="name" placeholder="Acme"></div>
+          <div class="sc-field mono"><label>Slug</label><input id="slug" placeholder="acme"></div>
+        </div>
+        <div class="sc-field mono"><label id="passwordLabel">Client password</label><input id="password" type="password" placeholder="something the client will remember"></div>
+        <div class="sc-eyebrow" id="passwordHint" style="display:none;">Leave blank to keep the existing password. Fill to reset.</div>
+      </div>
+
+      <div class="sc-card">
+        <div class="sc-eyebrow">Models</div>
+        <div class="sc-grid-2">
+          <div class="sc-field">
+            <label>Copywriter model (Claude)</label>
+            <select id="model_copywriter">
+              <option value="claude-opus-4-8">claude-opus-4-8 (highest quality)</option>
+              <option value="claude-opus-4-7">claude-opus-4-7</option>
+              <option value="claude-sonnet-5">claude-sonnet-5</option>
+              <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (fastest)</option>
+            </select>
+          </div>
+          <div class="sc-field">
+            <label>Art director model (Magnific Mystic)</label>
+            <select id="model_artDirector">
+              <option value="realism">realism (photographic default)</option>
+              <option value="zen">zen (smoother, basic, cleaner)</option>
+              <option value="flexible">flexible (HDR, saturated)</option>
+              <option value="fluid">fluid (best prompt adherence)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="sc-card">
+        <div class="sc-eyebrow">Strategy — what the brand IS</div>
+        <div class="sc-eyebrow" style="color: var(--sc-mist); text-transform: none; letter-spacing: 0; font-family: var(--font-display); font-size: 13px;">
+          Positioning, audience, products, belief. Fed into the Copywriter's system prompt so it can write with facts, not just tone. If left blank, only the voice section informs the output — good for tone, thin on facts.
+        </div>
+        <div class="sc-field"><label>Positioning</label>
+          <textarea id="strategy_positioning" placeholder="Loop X builds machine intelligence for the most uncontrolled environments — mining, dust, dark. Where GPS fails, LiDAR blinds out, and cameras go dark, Loop X sees."></textarea></div>
+        <div class="sc-field"><label>Audience</label>
+          <textarea id="strategy_audience" placeholder="Mine operators, autonomy engineers, heavy-industry ops leads. An operations lead should understand the value on the first scroll." style="min-height: 100px;"></textarea></div>
+        <div class="sc-field"><label>Products (one per line — Name — short description)</label>
+          <textarea id="strategy_products" placeholder="Collision Avoidance System — 360° detection preventing machine-to-machine and machine-to-person incidents."></textarea></div>
+        <div class="sc-field"><label>Core belief / north star</label>
+          <textarea id="strategy_belief" placeholder="Autonomy is won in the dark." style="min-height: 80px;"></textarea></div>
+      </div>
+
+      <div class="sc-card">
+        <div class="sc-eyebrow">Voice</div>
+        <div class="sc-field"><label>Guidelines</label>
+          <textarea id="voice_guidelines" placeholder="Sharp, spare, declarative. Confident, no hype."></textarea></div>
+        <div class="sc-grid-2">
+          <div class="sc-field"><label>Examples (one per line)</label>
+            <textarea id="voice_examples" placeholder="Autonomy is won in the dark.&#10;Earned underground."></textarea></div>
+          <div class="sc-field"><label>Do NOT use (one per line)</label>
+            <textarea id="voice_donot" placeholder="emoji&#10;exclamation&#10;cutting-edge"></textarea></div>
+        </div>
+      </div>
+
+      <div class="sc-card">
+        <div class="sc-eyebrow">Art direction</div>
+        <div class="sc-field"><label>Palette (comma-separated, e.g. black:#000000, signal:#FF0000)</label>
+          <input id="palette" placeholder="black:#000000, white:#FFFFFF, signal:#FF0000"></div>
+        <div id="swatches" style="display:flex; flex-wrap:wrap; gap: 8px;"></div>
+        <div class="sc-grid-2">
+          <div class="sc-field"><label>Photography</label><textarea id="photography" placeholder="Black-and-white, high-contrast, grainy."></textarea></div>
+          <div class="sc-field"><label>Framing</label><textarea id="framing" placeholder="Wide, orthogonal, hairline rules."></textarea></div>
+        </div>
+        <div class="sc-grid-2">
+          <div class="sc-field"><label>Grade</label><textarea id="grade" placeholder="Desaturated, pushed contrast."></textarea></div>
+          <div class="sc-field"><label>Reference cues (one per line)</label><textarea id="cues" placeholder="dust cloud on black&#10;thermal capture"></textarea></div>
+        </div>
+      </div>
+
+      <div class="sc-row" style="justify-content: space-between;">
+        <div class="sc-row">
+          <button class="sc-pill solid" id="save">Save →</button>
+          <button class="sc-pill mono small" id="preview">Preview prompts</button>
+        </div>
+        <span class="sc-status" id="status"></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="sc-botbar">
+    <div class="left"><a href="/" class="sc-pill small mono">← Explore</a></div>
+    <div class="center"></div>
+    <div class="right"><a href="#" id="logout" class="sc-pill small mono">Sign out</a></div>
+  </footer>
+</div>
+
+<script src="/brand-os/starfield.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const editSlug = params.get('slug');
+  const isNew = editSlug === '__new__';
+  const isEditor = !!editSlug;
+
+  // Guard
+  (async () => {
+    const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
+    if (!r.ok) { location.href = `/brand-os/login?admin=1&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
+    const me = await r.json();
+    if (me.role !== 'admin') { location.href = '/brand-os/login?admin=1'; return; }
+
+    if (isEditor) initEditor();
+    else initList();
+  })();
+
+  document.getElementById('logout').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await fetch('/api/brand-os/session', { method: 'DELETE', credentials: 'same-origin' });
+    location.href = '/brand-os';
+  });
+
+  /* -----------------------------------------------------------
+     LIST VIEW
+  ----------------------------------------------------------- */
+  async function initList() {
+    document.getElementById('pageTag').textContent = 'Studio · Brands';
+    document.getElementById('listView').style.display = '';
+    document.getElementById('editorView').style.display = 'none';
+    try {
+      const r = await fetch('/api/brand-os/brands', { credentials: 'same-origin' });
+      const j = await r.json();
+      const list = document.getElementById('brandsList');
+      list.innerHTML = '';
+      if (!j.brands || !j.brands.length) {
+        list.innerHTML = '<div class="sc-status">No brands yet. Create your first with the ＋ New brand button.</div>';
+        return;
+      }
+      for (const b of j.brands) {
+        const a = document.createElement('a');
+        a.className = 'brand-row';
+        a.href = `?slug=${encodeURIComponent(b.slug)}`;
+        a.innerHTML = `
+          <div class="name">${escapeHtml(b.name || b.slug)}</div>
+          <div class="slug">${escapeHtml(b.slug)}</div>
+          <div class="updated">${fmtDate(b.updatedAt)}</div>
+          <div class="arrow">edit →</div>
+        `;
+        list.appendChild(a);
+      }
+    } catch (e) {
+      document.getElementById('brandsList').innerHTML = `<div class="sc-status err">${escapeHtml(e.message)}</div>`;
+    }
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { return new Date(iso).toISOString().slice(0, 10); } catch { return '—'; }
+  }
+  function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* -----------------------------------------------------------
+     EDITOR VIEW
+  ----------------------------------------------------------- */
+  async function initEditor() {
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('editorView').style.display = 'flex';
+    document.getElementById('pageTag').textContent = 'Studio · Editor';
+
+    if (isNew) {
+      document.getElementById('editorMode').textContent = 'New brand';
+      document.getElementById('editorTitle').textContent = 'New brand.';
+      // slug editable
+      document.getElementById('slug').disabled = false;
+      document.getElementById('passwordLabel').textContent = 'Client password';
+    } else {
+      document.getElementById('editorMode').textContent = 'Editing';
+      document.getElementById('editorTitle').textContent = `${editSlug}.`;
+      // load
+      try {
+        const r = await fetch(`/api/brand-os/brands?slug=${encodeURIComponent(editSlug)}`, { credentials: 'same-origin' });
+        const b = await r.json();
+        if (!r.ok) throw new Error(b.error || 'Load failed');
+        fillForm(b);
+        document.getElementById('slug').disabled = true;
+        document.getElementById('passwordLabel').textContent = 'Reset password (optional)';
+        document.getElementById('passwordHint').style.display = '';
+      } catch (e) {
+        setStatus(e.message, 'err');
+      }
+    }
+
+    // Tabs
+    document.querySelectorAll('[data-tab]').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      ['fields', 'assets', 'prompts', 'usage', 'zip'].forEach(name => {
+        const el = document.getElementById('tab-' + name);
+        if (!el) return;
+        el.style.display = t.dataset.tab === name ? 'flex' : 'none';
+      });
+      if (t.dataset.tab === 'prompts') refreshPrompts();
+      if (t.dataset.tab === 'usage') refreshUsage();
+    }));
+
+    // Palette live-swatches
+    document.getElementById('palette').addEventListener('input', renderSwatches);
+
+    // Slug auto from name (only when new)
+    document.getElementById('name').addEventListener('input', e => {
+      if (!isNew) return;
+      const slugEl = document.getElementById('slug');
+      if (!slugEl.dataset.touched) {
+        slugEl.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+      }
+    });
+    document.getElementById('slug').addEventListener('input', e => e.target.dataset.touched = '1');
+
+    document.getElementById('save').addEventListener('click', doSave);
+    document.getElementById('preview').addEventListener('click', () => {
+      document.querySelector('[data-tab="prompts"]').click();
+    });
+
+    initZipFlow();
+    initAssetsTab();
+
+    // Paste box → parse strategy markdown directly
+    const parseBtn = document.getElementById('parsePaste');
+    if (parseBtn) {
+      parseBtn.addEventListener('click', () => {
+        const text = document.getElementById('pastedStrategy').value;
+        if (!text.trim()) { setStatus('Nothing to parse.', 'err'); return; }
+        const filled = applyStrategyMarkdown(text);
+        const zs = document.getElementById('zipStatus');
+        if (zs) zs.textContent = filled.length
+          ? `Filled: ${filled.join(', ')}. Review and save.`
+          : 'No recognizable headings — try Positioning, Audience, Products, Belief.';
+        document.querySelector('[data-tab="fields"]').click();
+      });
+    }
+  }
+
+  function fillForm(b) {
+    document.getElementById('name').value = b.name || '';
+    document.getElementById('slug').value = b.slug || '';
+    // Assets — new simplified schema, with legacy fallbacks
+    const legacyBrand = b.assets?.brandAssetsUrl || '';
+    document.getElementById('asset_library').value = b.assets?.assetLibraryUrl || legacyBrand;
+    document.getElementById('asset_zip').value = b.assets?.guidelinesZipUrl || '';
+    let pdfs = Array.isArray(b.assets?.pdfGuidelines) ? b.assets.pdfGuidelines.slice() : [];
+    if (!pdfs.length && b.assets?.pdfGuidelinesUrl) pdfs = [{ name: 'Brand Guidelines.pdf', url: b.assets.pdfGuidelinesUrl }];
+    renderPdfList(pdfs);
+    // Enter workshop link
+    if (b.slug) {
+      document.getElementById('enterHubLink').href = `/brand-os/hub?slug=${encodeURIComponent(b.slug)}`;
+      document.getElementById('enterWorkshopLink').href = `/brand-os/brand?slug=${encodeURIComponent(b.slug)}`;
+    }
+    document.getElementById('strategy_positioning').value = b.strategy?.positioning || '';
+    document.getElementById('strategy_audience').value = b.strategy?.audience || '';
+    document.getElementById('strategy_products').value = (b.strategy?.products || []).join('\n');
+    document.getElementById('strategy_belief').value = b.strategy?.belief || '';
+    document.getElementById('voice_guidelines').value = b.voice?.guidelines || '';
+    document.getElementById('voice_examples').value = (b.voice?.examples || []).join('\n');
+    document.getElementById('voice_donot').value = (b.voice?.doNotUse || []).join('\n');
+    document.getElementById('palette').value = (b.art?.palette || []).map(p => `${p.name}:${p.hex}`).join(', ');
+    document.getElementById('photography').value = b.art?.photography || '';
+    document.getElementById('framing').value = b.art?.framing || '';
+    document.getElementById('grade').value = b.art?.grade || '';
+    document.getElementById('cues').value = (b.art?.referenceCues || []).join('\n');
+    if (b.model?.copywriter) document.getElementById('model_copywriter').value = b.model.copywriter;
+    if (b.model?.artDirector) document.getElementById('model_artDirector').value = b.model.artDirector;
+    renderSwatches();
+  }
+
+  function renderSwatches() {
+    const wrap = document.getElementById('swatches'); wrap.innerHTML = '';
+    parsePalette(document.getElementById('palette').value).forEach(({ name, hex }) => {
+      const el = document.createElement('div');
+      el.className = 'swatch';
+      el.innerHTML = `<span class="chip" style="background:${hex}"></span>${escapeHtml(name)} ${escapeHtml(hex)}`;
+      wrap.appendChild(el);
+    });
+  }
+  function parsePalette(str) {
+    return (str || '').split(',').map(s => s.trim()).filter(Boolean).map(pair => {
+      const [name, hex] = pair.split(':').map(x => x.trim());
+      return { name: name || hex, hex: /^#/.test(hex) ? hex : `#${hex || ''}` };
+    }).filter(p => /^#[0-9a-fA-F]{3,8}$/.test(p.hex));
+  }
+
+  function buildConfig() {
+    return {
+      name: document.getElementById('name').value.trim(),
+      slug: document.getElementById('slug').value.trim(),
+      password: document.getElementById('password').value,
+      assets: {
+        assetLibraryUrl:  document.getElementById('asset_library').value.trim(),
+        pdfGuidelines:    readPdfList(),
+        guidelinesZipUrl: document.getElementById('asset_zip').value.trim(),
+      },
+      model: {
+        copywriter: document.getElementById('model_copywriter').value,
+        artDirector: document.getElementById('model_artDirector').value,
+      },
+      strategy: {
+        positioning: document.getElementById('strategy_positioning').value.trim(),
+        audience: document.getElementById('strategy_audience').value.trim(),
+        products: splitLines(document.getElementById('strategy_products').value),
+        belief: document.getElementById('strategy_belief').value.trim(),
+      },
+      voice: {
+        guidelines: document.getElementById('voice_guidelines').value.trim(),
+        examples: splitLines(document.getElementById('voice_examples').value),
+        doNotUse: splitLines(document.getElementById('voice_donot').value),
+      },
+      art: {
+        palette: parsePalette(document.getElementById('palette').value),
+        photography: document.getElementById('photography').value.trim(),
+        framing: document.getElementById('framing').value.trim(),
+        grade: document.getElementById('grade').value.trim(),
+        referenceCues: splitLines(document.getElementById('cues').value),
+      },
+    };
+  }
+  function splitLines(s) { return (s || '').split('\n').map(x => x.trim()).filter(Boolean); }
+
+  async function doSave() {
+    const cfg = buildConfig();
+    if (!cfg.name || !cfg.slug) {
+      setStatus('Name and slug required.', 'err'); return;
+    }
+    if (isNew && !cfg.password) {
+      setStatus('New brand needs a password.', 'err'); return;
+    }
+    if (!isNew && !cfg.password) delete cfg.password; // preserve existing
+    setStatus('Saving…');
+    try {
+      const r = await fetch('/api/brand-os/save-brand', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        credentials: 'same-origin', body: JSON.stringify(cfg),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Save failed');
+      if (j.committed) setStatus(`Committed. ${j.commit || j.path}`, 'ok');
+      else setStatus('Saved locally. GITHUB_PAT not set — manual commit required.', 'ok');
+      // After creating a new brand, redirect to its editor
+      if (isNew) setTimeout(() => location.href = `?slug=${encodeURIComponent(cfg.slug)}`, 800);
+    } catch (e) { setStatus(e.message, 'err'); }
+  }
+
+  async function refreshUsage() {
+    const slug = document.getElementById('slug').value.trim();
+    const monthsEl = document.getElementById('usageMonths');
+    const eventsEl = document.getElementById('usageEvents');
+    const totalEl = document.getElementById('usageTotal');
+    if (!slug || isNew) {
+      monthsEl.textContent = 'Save the brand first — then usage tracking starts.';
+      eventsEl.textContent = '';
+      totalEl.textContent = '$0.00';
+      return;
+    }
+    monthsEl.textContent = 'Loading…';
+    eventsEl.textContent = '';
+    try {
+      const r = await fetch(`/api/brand-os/usage?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Usage load failed');
+      totalEl.textContent = `$${(j.totalCostUsd || 0).toFixed(2)}`;
+      monthsEl.innerHTML = '';
+      j.months.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'brand-row';
+        row.style.gridTemplateColumns = '80px 1fr 1fr 100px';
+        row.innerHTML = `
+          <div class="slug">${escapeHtml(m.month)}</div>
+          <div class="slug">Copywriter · ${m.copywriter?.calls || 0} calls · ${(m.copywriter?.inputTokens || 0)}/${(m.copywriter?.outputTokens || 0)} tok</div>
+          <div class="slug">Art dir · ${m.artDirector?.calls || 0} calls</div>
+          <div class="name" style="font-size: 18px; text-align: right;">$${(m.totalCostUsd || 0).toFixed(2)}</div>
+        `;
+        monthsEl.appendChild(row);
+      });
+      const current = j.months[0];
+      const evs = (current?.events || []).slice(0, 25);
+      if (!evs.length) {
+        eventsEl.innerHTML = '<div class="sc-status">No calls yet this month.</div>';
+      } else {
+        eventsEl.innerHTML = '';
+        evs.forEach(e => {
+          const row = document.createElement('div');
+          row.style.cssText = 'display: grid; grid-template-columns: 140px 100px 1fr 90px; gap: 12px; padding: 6px 10px; border-bottom: 1px solid var(--sc-hairline); font-family: var(--font-mono); font-size: 11px; color: var(--sc-mist);';
+          const detail = e.type === 'copywriter'
+            ? `${e.model} · ${e.preset || '—'} · ${e.inputTokens || 0}/${e.outputTokens || 0} tok`
+            : `${e.model} · ${e.preset || '—'} · ${e.aspect || '—'}`;
+          row.innerHTML = `
+            <div>${new Date(e.ts).toISOString().slice(0, 16).replace('T', ' ')}</div>
+            <div style="color: var(--sc-ink);">${e.type}</div>
+            <div>${escapeHtml(detail)}</div>
+            <div style="text-align: right; color: var(--sc-ink);">$${(e.costUsd || 0).toFixed(4)}</div>
+          `;
+          eventsEl.appendChild(row);
+        });
+      }
+    } catch (e) {
+      monthsEl.innerHTML = `<div class="sc-status err">${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  async function refreshPrompts() {
+    const slug = document.getElementById('slug').value.trim();
+    if (!slug || isNew) {
+      document.getElementById('prompt1').textContent = 'Save the brand first — then previews render live.';
+      document.getElementById('prompt2').textContent = '';
+      document.getElementById('apiParams').textContent = '';
+      return;
+    }
+    try {
+      const r = await fetch(`/api/brand-os/preview-prompts?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Preview failed');
+      document.getElementById('prompt1').textContent = j.copywriter.systemTemplate;
+      document.getElementById('pmodel1').textContent = j.copywriter.model;
+      document.getElementById('prompt2').textContent = j.artDirector.promptTemplate;
+      document.getElementById('pmodel2').textContent = j.artDirector.model;
+      document.getElementById('apiParams').textContent = JSON.stringify(j.artDirector.apiParams, null, 2);
+    } catch (e) {
+      document.getElementById('prompt1').textContent = 'Error: ' + e.message;
+    }
+  }
+
+  function setStatus(text, cls = '') {
+    const s = document.getElementById('status');
+    s.textContent = text; s.className = 'sc-status ' + cls;
+  }
+
+  /* ---------- Assets tab ---------- */
+  let __pdfCache = [];
+  function renderPdfList(list) {
+    __pdfCache = Array.isArray(list) ? [...list] : [];
+    const wrap = document.getElementById('pdfList');
+    wrap.innerHTML = '';
+    if (!__pdfCache.length) {
+      const d = document.createElement('div');
+      d.className = 'sc-status';
+      d.textContent = 'No PDFs yet.';
+      wrap.appendChild(d);
+      return;
+    }
+    __pdfCache.forEach((f, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display: grid; grid-template-columns: 1fr 2fr auto; gap: 8px; align-items: center;';
+      row.innerHTML = `
+        <input value="${escapeHtml(f.name || '')}" placeholder="Loop X Brand Guidelines.pdf"
+               style="background: transparent; color: var(--sc-ink); border: 1px solid var(--sc-hairline); border-radius: 6px; padding: 8px 10px; font-family: var(--font-mono); font-size: 12px;">
+        <input value="${escapeHtml(f.url || '')}" placeholder="https://…"
+               style="background: transparent; color: var(--sc-ink); border: 1px solid var(--sc-hairline); border-radius: 6px; padding: 8px 10px; font-family: var(--font-mono); font-size: 12px;">
+        <button class="sc-pill mono small">×</button>
+      `;
+      const [nameEl, urlEl, rmBtn] = row.querySelectorAll('input, button');
+      nameEl.addEventListener('input', e => __pdfCache[i].name = e.target.value);
+      urlEl.addEventListener('input',  e => __pdfCache[i].url  = e.target.value);
+      rmBtn.addEventListener('click',  () => { __pdfCache.splice(i, 1); renderPdfList(__pdfCache); });
+      wrap.appendChild(row);
+    });
+  }
+  function readPdfList() {
+    return __pdfCache.filter(f => (f.url || '').trim()).map(f => ({ name: (f.name || '').trim(), url: f.url.trim() }));
+  }
+
+  async function uploadBlob(file, prefix) {
+    // Client-upload via @vercel/blob/client
+    const mod = await import('https://esm.sh/@vercel/blob@0.27.0/client');
+    const slug = document.getElementById('slug').value.trim() || 'unknown';
+    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${prefix}/${slug}/${safe}`;
+    const blob = await mod.upload(path, file, {
+      access: 'public',
+      handleUploadUrl: '/api/brand-os/blob-token',
+    });
+    return blob.url;
+  }
+
+  function initAssetsTab() {
+    // Bind upload buttons on the guidelines/library rows
+    document.querySelectorAll('[data-upload]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const slot = btn.dataset.upload;
+        const accept = btn.dataset.accept;
+        const prefix = btn.dataset.prefix;
+        const f = document.createElement('input');
+        f.type = 'file';
+        f.accept = accept;
+        f.style.display = 'none';
+        f.addEventListener('change', async () => {
+          const file = f.files?.[0];
+          if (!file) return;
+          setAssetsStatus(`Uploading ${file.name}…`);
+          try {
+            const url = await uploadBlob(file, prefix);
+            const targetId = ({ zip: 'asset_zip' })[slot];
+            if (targetId) document.getElementById(targetId).value = url;
+            setAssetsStatus(`Uploaded. Remember to save.`, 'ok');
+          } catch (e) {
+            setAssetsStatus(`Upload failed: ${e.message}`, 'err');
+          }
+        });
+        document.body.appendChild(f); f.click(); f.remove();
+      });
+    });
+
+    // PDF upload — append to the pdfList array
+    document.getElementById('pdfUploadBtn').addEventListener('click', async () => {
+      const f = document.createElement('input');
+      f.type = 'file'; f.accept = 'application/pdf'; f.style.display = 'none';
+      f.addEventListener('change', async () => {
+        const file = f.files?.[0]; if (!file) return;
+        setAssetsStatus(`Uploading ${file.name}…`);
+        try {
+          const url = await uploadBlob(file, 'brand-os/assets/pdf');
+          __pdfCache.push({ name: file.name, url });
+          renderPdfList(__pdfCache);
+          setAssetsStatus('Uploaded. Remember to save.', 'ok');
+        } catch (e) { setAssetsStatus(`Upload failed: ${e.message}`, 'err'); }
+      });
+      document.body.appendChild(f); f.click(); f.remove();
+    });
+
+    document.getElementById('pdfAddUrlBtn').addEventListener('click', () => {
+      __pdfCache.push({ name: '', url: '' });
+      renderPdfList(__pdfCache);
+    });
+  }
+
+  function setAssetsStatus(text, cls = '') {
+    const s = document.getElementById('assetsStatus');
+    if (!s) return;
+    s.textContent = text; s.className = 'sc-status ' + cls;
+  }
+
+  /* Zip flow (unchanged) */
+  function initZipFlow() {
+    const drop = document.getElementById('drop');
+    const picker = document.getElementById('picker');
+    drop.addEventListener('click', () => picker.click());
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('hover'); }));
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('hover')));
+    drop.addEventListener('drop', e => { e.preventDefault(); handleZip(e.dataTransfer.files[0]); });
+    picker.addEventListener('change', e => handleZip(e.target.files[0]));
+  }
+  async function handleZip(file) {
+    if (!file) return;
+    const zs = document.getElementById('zipStatus');
+    const isZip = /\.zip$/i.test(file.name);
+
+    // Bare markdown / text file — parse directly.
+    if (!isZip) {
+      zs.textContent = 'Reading file…';
+      try {
+        const text = await file.text();
+        const filled = applyStrategyMarkdown(text);
+        zs.textContent = filled.length
+          ? `Filled: ${filled.join(', ')}. Review and save.`
+          : 'No matching headings found. Try named sections like Positioning, Audience, Products, Belief.';
+        document.querySelector('[data-tab="fields"]').click();
+      } catch (e) { zs.textContent = 'File read failed: ' + e.message; }
+      return;
+    }
+
+    zs.textContent = 'Reading zip…';
+    try {
+      const buf = await file.arrayBuffer();
+      const zip = await JSZip.loadAsync(buf);
+      const paths = Object.keys(zip.files);
+      const filled = new Set();
+
+      // Palette from design-system tokens
+      const colorsPath = paths.find(p => /tokens\/colors\.css$/i.test(p));
+      if (colorsPath) {
+        const css = await zip.files[colorsPath].async('text');
+        const palette = extractPalette(css);
+        if (palette.length) {
+          document.getElementById('palette').value = palette.map(p => `${p.name}:${p.hex}`).join(', ');
+          renderSwatches();
+          filled.add('palette');
+        }
+      }
+
+      // Sweep every markdown file for voice, photography, and strategy sections.
+      const mdPaths = paths.filter(p =>
+        /\.(md|markdown|txt)$/i.test(p) && !/^__MACOSX/.test(p) && !zip.files[p].dir
+      );
+      for (const p of mdPaths) {
+        const md = await zip.files[p].async('text');
+        applyStrategyMarkdown(md).forEach(k => filled.add(k));
+
+        if (!document.getElementById('voice_guidelines').value.trim()) {
+          const voice = extractSection(md, 'Content fundamentals') || extractSection(md, 'Voice');
+          if (voice) { document.getElementById('voice_guidelines').value = voice.trim(); filled.add('voice'); }
+        }
+        if (!document.getElementById('photography').value.trim()) {
+          const photo = extractSection(md, 'Photography') || extractSection(md, 'Visual foundations');
+          if (photo) { document.getElementById('photography').value = photo.trim().slice(0, 800); filled.add('photography'); }
+        }
+        if (isNew && !document.getElementById('name').value.trim()) {
+          const h1 = md.match(/^#\s+(.+?)\s+—?/m);
+          if (h1) {
+            document.getElementById('name').value = h1[1].trim();
+            document.getElementById('name').dispatchEvent(new Event('input'));
+            filled.add('name');
+          }
+        }
+      }
+
+      zs.textContent = filled.size
+        ? `Loaded ${paths.length} files. Filled: ${[...filled].join(', ')}. Review and save.`
+        : `Loaded ${paths.length} files. No recognizable sections found — fill by hand.`;
+      document.querySelector('[data-tab="fields"]').click();
+    } catch (e) { zs.textContent = 'Zip parse failed: ' + e.message; }
+  }
+
+  // Extract strategy sections from any markdown/text into the form.
+  // Returns which fields it filled.
+  function applyStrategyMarkdown(md) {
+    const filled = [];
+    const trySet = (id, ...names) => {
+      const el = document.getElementById(id);
+      if (el.value.trim()) return;
+      for (const n of names) {
+        const found = extractSection(md, n);
+        if (found) { el.value = found.trim().slice(0, 2000); filled.push(id); return; }
+      }
+    };
+    trySet('strategy_positioning', 'Positioning', 'What we are', 'Company', 'Product');
+    trySet('strategy_audience', 'Audience', 'Who we serve', 'For', 'Users');
+    trySet('strategy_belief', 'Core belief', 'North star', 'Belief', 'Manifesto', 'Vision');
+
+    const productsEl = document.getElementById('strategy_products');
+    if (!productsEl.value.trim()) {
+      const productsRaw = extractSection(md, 'Products') || extractSection(md, 'Product line');
+      if (productsRaw) {
+        const bullets = productsRaw
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => /^[-*•]/.test(l))
+          .map(l => l.replace(/^[-*•]\s*/, ''));
+        if (bullets.length) { productsEl.value = bullets.join('\n'); filled.push('strategy_products'); }
+      }
+    }
+    return filled;
+  }
+  function extractPalette(css) {
+    const found = []; const re = /--([a-z0-9-]+):\s*(?:rgb\((\d+),\s*(\d+),\s*(\d+)\)|(#[0-9a-fA-F]{3,8}))/gi;
+    let m;
+    while ((m = re.exec(css))) {
+      const name = m[1];
+      const hex = m[5] || `#${[m[2], m[3], m[4]].map(v => Number(v).toString(16).padStart(2, '0')).join('')}`;
+      if (name.length < 20 && /^(lx-|sc-)?[a-z-]+$/.test(name)) {
+        const clean = name.replace(/^lx-|^sc-/, '').replace(/-/g, ' ');
+        if (!found.some(f => f.hex.toLowerCase() === hex.toLowerCase())) found.push({ name: clean, hex });
+      }
+    }
+    return found.slice(0, 8);
+  }
+  function extractSection(md, heading) {
+    const re = new RegExp(`(?:^|\\n)#{1,4}\\s*${escapeRe(heading)}[^\\n]*\\n([\\s\\S]*?)(?=\\n#{1,4}\\s|$)`, 'i');
+    const m = md.match(re); return m ? m[1].trim() : null;
+  }
+  function escapeRe(s) { return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'); }
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Brand OS</title>
+<link rel="stylesheet" href="/brand-os/style.css">
+</head>
+<body>
+<div class="sc-page">
+  <header class="sc-topbar">
+    <div class="left"><span class="sc-wordmark">Spacecadet Studio<span class="plus">+</span></span></div>
+    <div class="center">Brand OS · Sign in</div>
+    <div class="right sc-meta-lines">NYC, Planet Earth
+<span class="sc-clock">00:00:00</span></div>
+  </header>
+
+  <main style="align-self:center; width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: var(--space-6);">
+    <div>
+      <div class="sc-eyebrow" id="mode-label">Client login</div>
+      <h1 class="sc-h1" id="mode-title">Welcome back.</h1>
+    </div>
+
+    <form id="loginForm" class="sc-card" style="gap: var(--space-4);">
+      <div class="sc-field mono">
+        <label for="f1" id="l1">Brand slug</label>
+        <input type="text" id="f1" name="slug" placeholder="acme" autocomplete="username" required>
+      </div>
+      <div class="sc-field mono">
+        <label for="f2">Password</label>
+        <input type="password" id="f2" name="password" autocomplete="current-password" required>
+      </div>
+      <div class="sc-status" id="msg"></div>
+      <div class="sc-row" style="justify-content: space-between;">
+        <button class="sc-pill solid" type="submit">Sign in →</button>
+        <a href="?admin=1" id="modeSwitch" class="sc-pill mono small">Admin sign-in</a>
+      </div>
+    </form>
+  </main>
+
+  <footer class="sc-botbar">
+    <div class="left"><a href="/brand-os" class="sc-pill small mono">← Home</a></div>
+    <div class="center"></div>
+    <div class="right">Locked to your brand</div>
+  </footer>
+</div>
+
+<script src="/brand-os/starfield.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const isAdmin = params.get('admin') === '1';
+  const presetSlug = params.get('slug') || '';
+  const brandName = params.get('brand') || '';
+  const next = params.get('next') || '';
+  const label = document.getElementById('mode-label');
+  const title = document.getElementById('mode-title');
+  const l1 = document.getElementById('l1');
+  const f1 = document.getElementById('f1');
+  const modeSwitch = document.getElementById('modeSwitch');
+
+  if (isAdmin) {
+    label.textContent = 'Admin login';
+    title.textContent = 'Studio access.';
+    f1.placeholder = 'admin username';
+    f1.name = 'username';
+    l1.textContent = 'Username';
+    modeSwitch.href = '/brand-os/login';
+    modeSwitch.textContent = 'Client sign-in';
+  } else if (presetSlug) {
+    // Client-shareable link: pre-fill the slug, hide the field, and treat as a single-password prompt.
+    f1.value = presetSlug;
+    f1.parentElement.style.display = 'none';
+    label.textContent = 'Brand OS';
+    title.textContent = 'Enter to continue.';
+    modeSwitch.style.display = 'none';
+    // Fetch the real display name so header reads "Loop X · Brand OS" not "LOOPX".
+    (async () => {
+      let displayName = brandName;
+      if (!displayName) {
+        try {
+          const r = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(presetSlug)}`);
+          if (r.ok) {
+            const j = await r.json();
+            displayName = j.name || presetSlug;
+          } else if (r.status === 404) {
+            label.textContent = 'Brand not found';
+            title.textContent = 'No brand at this URL.';
+            document.getElementById('loginForm').style.display = 'none';
+            return;
+          }
+        } catch {}
+      }
+      displayName = displayName || presetSlug;
+      label.textContent = `${displayName} · Brand OS`;
+    })();
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('msg');
+    msg.className = 'sc-status'; msg.textContent = 'Signing in…';
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      const r = await fetch('/api/brand-os/session', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'same-origin',
+      });
+      const j = await r.json();
+      if (!r.ok) { msg.className = 'sc-status err'; msg.textContent = j.error || 'Sign-in failed'; return; }
+      msg.className = 'sc-status ok'; msg.textContent = 'OK.';
+      if (j.role === 'admin') location.href = next || '/brand-os/admin';
+      else location.href = next || `/brand-os/hub?slug=${encodeURIComponent(j.slug)}`;
+    } catch (err) {
+      msg.className = 'sc-status err'; msg.textContent = err.message;
+    }
+  });
+</script>
+</body>
+</html>

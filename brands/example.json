@@ -1,0 +1,80 @@
+{
+  "name": "Loop X",
+  "slug": "example",
+  "passwordHash": "$2b$10$pJ7aYcvE0271ov2n40Oh9OZjPMDfVz0lP56BreTo6hYBNZF7IKgPi",
+  "createdAt": "2026-07-07T00:00:00.000Z",
+  "strategy": {
+    "positioning": "Loop X builds machine intelligence for the most uncontrolled environments — mining, underground, dust, glare, total dark. Thermal perception that works with no tag, no map, and no light required. Where GPS fails, LiDAR blinds out, and cameras go dark, Loop X sees.",
+    "audience": "Mine operators, autonomy engineers, and heavy-industry ops leads responsible for machine safety, uptime, and productivity in visibility-hostile environments. An operations lead should understand the value on the first scroll.",
+    "products": [
+      "Collision Avoidance System — 360° detection preventing machine-to-machine and machine-to-person incidents in low-visibility conditions.",
+      "Load Sight System — real-time load monitoring for haul trucks and loaders in dust and dark.",
+      "LoopX SLAM — thermal-fused SLAM for autonomous navigation without GPS or optical reference."
+    ],
+    "belief": "Autonomy is won in the dark. The most dangerous environments deserve the most intelligence."
+  },
+  "voice": {
+    "guidelines": "Intelligence-led authority. Confident, spare, declarative. Two registers held together: the grounded (precise, material, data-dense) and the expansive (ambitious, frontier-facing). Collective 'we'. Clarity as a value — an operations lead gets it on the first scroll. Display / headlines set UPPERCASE; body sentence case; labels UPPERCASE mono. Em dashes for asides. Short paragraphs. No exclamation. Technical specificity is welcome.",
+    "examples": [
+      "All condition intelligence",
+      "Machine intelligence for uncontrolled environments",
+      "Autonomy is won in the dark",
+      "The most dangerous environments deserve the most intelligence",
+      "So we started where it's hardest",
+      "Earned underground"
+    ],
+    "doNotUse": [
+      "emoji of any kind",
+      "exclamation marks",
+      "cutting-edge",
+      "revolutionary",
+      "unleash / unlock",
+      "next-gen",
+      "hype adjectives"
+    ]
+  },
+  "art": {
+    "palette": [
+      { "name": "black", "hex": "#000000" },
+      { "name": "white", "hex": "#FFFFFF" },
+      { "name": "off-white", "hex": "#F7F7F7" },
+      { "name": "grey", "hex": "#C4C4C4" },
+      { "name": "deck grey", "hex": "#383838" },
+      { "name": "signal", "hex": "#FF0000" }
+    ],
+    "photography": "Black-and-white, high-contrast, grainy. Terrain and rock; dust and particle clouds on black; cave / underground; thermal captures. Cool, austere-industrial. Always desaturated, pushed contrast.",
+    "framing": "Wide, orthogonal. Square-edged and hairline-ruled. Full-bleed heroes with black protection gradients over imagery only where legibility demands it. No decorative gradients.",
+    "grade": "Desaturated to grayscale, contrast pushed. Deep blacks, textured mid-tones.",
+    "referenceCues": [
+      "thermal capture of terrain at night",
+      "dust cloud on black",
+      "underground mine shaft, low-key lighting",
+      "operator in cabin, high-contrast BW",
+      "sensor array on machinery, orthogonal composition",
+      "particles in shaft of light"
+    ]
+  },
+  "presets": {
+    "copywriter": [
+      { "label": "Tighten", "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone. No hedging." },
+      { "label": "Rewrite as tagline", "prompt": "One line, max 8 words. UPPERCASE-worthy. Uncompromising." },
+      { "label": "Headline", "prompt": "A display headline in the brand voice. UPPERCASE. Declarative. Short." },
+      { "label": "Explain simply", "prompt": "Rewrite in plain language for an operations lead unfamiliar with the technology. Still the brand voice — restrained, confident, no hype." }
+    ],
+    "artDirector": [
+      { "label": "Hero horizontal", "aspect": "3:2", "hint": "wide landscape composition, low horizon, negative space for wordmark bottom-left" },
+      { "label": "Product still", "aspect": "1:1", "hint": "product-first, sensor or module on black surface, hairline reflection, orthogonal composition" },
+      { "label": "Social square", "aspect": "1:1", "hint": "eye-level composition, headroom for wordmark, high-contrast, minimal background" },
+      { "label": "Story portrait", "aspect": "9:16", "hint": "vertical hero, subject centred low, tall negative space above for headline" }
+    ]
+  },
+  "model": {
+    "copywriter": "claude-opus-4-8",
+    "artDirector": "realism"
+  },
+  "assets": {
+    "assetLibraryUrl": "",
+    "pdfGuidelines": [],
+    "guidelinesZipUrl": ""
+  }
+}

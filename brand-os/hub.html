@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand OS</title>
+<link rel="stylesheet" href="/brand-os/style.css">
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  .sc-page {
+    height: 100vh;
+    display: flex; flex-direction: column;
+    gap: var(--space-5);
+  }
+  .sc-page > main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-5); }
+
+  .hero-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: var(--space-6); flex-wrap: wrap;
+  }
+  .hero-text .sc-eyebrow { margin-bottom: 6px; }
+  .hub-title {
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: var(--sc-white);
+    font-weight: 400;
+    margin: 0;
+  }
+  .hero-nav {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    position: relative;
+  }
+  .hero-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 12px 20px;
+    border: 1px solid var(--sc-hairline-strong);
+    border-radius: 999px;
+    color: var(--sc-ink);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--dur-fast) var(--ease),
+                border-color var(--dur-fast) var(--ease),
+                opacity var(--dur-fast) var(--ease);
+  }
+  .hero-btn:hover { background: rgba(255,255,255,0.06); border-color: var(--sc-ink); opacity: 1; }
+  .hero-btn.dead { opacity: 0.35; cursor: not-allowed; }
+  .hero-btn.dead:hover { background: transparent; border-color: var(--sc-hairline-strong); }
+  .hero-btn.compound { padding-right: 8px; }
+  .info-i {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1px solid var(--sc-mist);
+    color: var(--sc-mist);
+    font-family: var(--font-mono); font-size: 10px;
+    cursor: help;
+    position: relative;
+    margin-left: 4px;
+  }
+  .info-i:hover { color: var(--sc-ink); border-color: var(--sc-ink); }
+  .info-i:hover::after {
+    content: attr(data-tip);
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 20;
+    width: 260px;
+    padding: 12px 14px;
+    background: var(--sc-void);
+    border: 1px solid var(--sc-hairline-strong);
+    border-radius: 8px;
+    color: var(--sc-ink);
+    font-family: var(--font-display);
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 0; text-transform: none;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+  }
+  .pdf-popover {
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 15;
+    background: var(--sc-void);
+    border: 1px solid var(--sc-hairline-strong);
+    border-radius: 10px;
+    padding: 6px;
+    min-width: 260px; max-width: 380px;
+    display: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .pdf-popover.open { display: block; }
+  .pdf-popover a {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px;
+    color: var(--sc-ink); text-decoration: none;
+    border-radius: 6px;
+    font-family: var(--font-display); font-size: 14px;
+  }
+  .pdf-popover a:hover { background: rgba(255,255,255,0.08); opacity: 1; }
+  .pdf-popover a .cta {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--sc-mist);
+  }
+
+  .agents-row {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  @media (max-width: 720px) { .agents-row { grid-template-columns: 1fr; } }
+  .agents-row .sc-card {
+    height: 100%;
+    aspect-ratio: auto;
+    display: flex; flex-direction: column;
+    padding: var(--space-6);
+  }
+</style>
+</head>
+<body>
+<div class="sc-page">
+  <header class="sc-topbar">
+    <div class="left"><span class="sc-wordmark">Spacecadet Studio<span class="plus">+</span></span></div>
+    <div class="center" id="brandTag">— · Brand OS</div>
+    <div class="right sc-meta-lines">NYC, Planet Earth
+<span class="sc-clock">00:00:00</span></div>
+  </header>
+
+  <main style="align-self: stretch; max-width: 1240px; width: 100%; margin: 0 auto;">
+    <div class="hero-row">
+      <div class="hero-text">
+        <div class="sc-eyebrow">Brand OS</div>
+        <h1 class="hub-title" id="heroBrand">—</h1>
+      </div>
+      <nav class="hero-nav">
+        <a class="hero-btn" id="assetBtn" href="#" target="_blank" rel="noreferrer">Asset library ↗</a>
+        <button class="hero-btn" id="pdfBtn" type="button">PDF guidelines ↓</button>
+        <div class="pdf-popover" id="pdfPopover"></div>
+        <div style="display:inline-flex; align-items:center;">
+          <a class="hero-btn compound" id="zipBtn" href="#" download rel="noreferrer">Guidelines ZIP ↓</a>
+          <span class="info-i" data-tip="Paste this ZIP into Claude Design, Cowork, or Claude Code to bootstrap the brand system in seconds.">i</span>
+        </div>
+      </nav>
+    </div>
+
+    <div class="agents-row">
+      <a class="sc-card hover-lift" id="copyLink" href="#">
+        <div class="sc-tag"><span class="num">01</span> Locked to your voice</div>
+        <h2 class="sc-h1" style="margin-top: auto;">Copywriter</h2>
+        <div class="sc-row" style="justify-content: space-between; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
+          <span class="sc-eyebrow">Write / rewrite</span>
+          <span class="sc-eyebrow">→</span>
+        </div>
+      </a>
+      <a class="sc-card hover-lift" id="artLink" href="#">
+        <div class="sc-tag"><span class="num">02</span> Locked to your look</div>
+        <h2 class="sc-h1" style="margin-top: auto;">Art Director</h2>
+        <div class="sc-row" style="justify-content: space-between; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
+          <span class="sc-eyebrow">Generate hero shot</span>
+          <span class="sc-eyebrow">→</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer class="sc-botbar">
+    <div class="left"><a href="#" id="logout" class="sc-pill small mono">Sign out</a></div>
+    <div class="center"></div>
+    <div class="right"><a href="/" class="sc-pill small mono">← Explore</a></div>
+  </footer>
+</div>
+
+<script src="/brand-os/starfield.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const slug = params.get('slug');
+  if (!slug) location.href = '/brand-os/login';
+
+  document.getElementById('copyLink').href = `/brand-os/copywriter?slug=${encodeURIComponent(slug)}`;
+  document.getElementById('artLink').href  = `/brand-os/art-director?slug=${encodeURIComponent(slug)}`;
+
+  loadHub();
+
+  async function loadHub() {
+    try {
+      const s = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
+      if (!s.ok) { location.href = `/brand-os/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
+
+      const r = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const b = await r.json();
+      if (!r.ok) throw new Error(b.error || 'Load failed');
+
+      const name = (b.name || slug).toString();
+      document.getElementById('brandTag').textContent = `${name.toUpperCase()} · Brand OS`;
+      document.getElementById('heroBrand').textContent = name;
+      renderTopNav(b.assets || {});
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function renderTopNav(assets) {
+    // Asset library (falls back to legacy brandAssetsUrl)
+    const assetUrl = assets.assetLibraryUrl || assets.brandAssetsUrl || '';
+    const assetBtn = document.getElementById('assetBtn');
+    if (assetUrl) {
+      assetBtn.href = assetUrl;
+    } else {
+      assetBtn.classList.add('dead');
+      assetBtn.href = '#';
+      assetBtn.addEventListener('click', e => e.preventDefault());
+    }
+
+    // PDF guidelines — support array; fall back to single legacy pdfGuidelinesUrl
+    let pdfs = Array.isArray(assets.pdfGuidelines) ? assets.pdfGuidelines.filter(f => f && f.url) : [];
+    if (!pdfs.length && assets.pdfGuidelinesUrl) pdfs = [{ name: 'Brand Guidelines.pdf', url: assets.pdfGuidelinesUrl }];
+    const pdfBtn = document.getElementById('pdfBtn');
+    const pdfPop = document.getElementById('pdfPopover');
+    if (pdfs.length === 0) {
+      pdfBtn.classList.add('dead');
+      pdfBtn.addEventListener('click', e => e.preventDefault());
+    } else if (pdfs.length === 1) {
+      pdfBtn.addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = pdfs[0].url; a.download = pdfs[0].name || '';
+        a.rel = 'noreferrer'; a.target = '_blank';
+        document.body.appendChild(a); a.click(); a.remove();
+      });
+    } else {
+      pdfPop.innerHTML = pdfs.map(f => `
+        <a href="${escapeAttr(f.url)}" download="${escapeAttr(f.name || '')}" target="_blank" rel="noreferrer">
+          <span>${escapeHtml(f.name || 'Untitled PDF')}</span>
+          <span class="cta">Download ↓</span>
+        </a>
+      `).join('');
+      pdfBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        pdfPop.classList.toggle('open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!pdfPop.contains(e.target) && e.target !== pdfBtn) pdfPop.classList.remove('open');
+      });
+    }
+
+    // Guidelines ZIP
+    const zipBtn = document.getElementById('zipBtn');
+    if (assets.guidelinesZipUrl) {
+      zipBtn.href = assets.guidelinesZipUrl;
+    } else {
+      zipBtn.classList.add('dead');
+      zipBtn.href = '#';
+      zipBtn.addEventListener('click', e => e.preventDefault());
+    }
+  }
+
+  function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  document.getElementById('logout').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await fetch('/api/brand-os/session', { method: 'DELETE', credentials: 'same-origin' });
+    location.href = '/brand-os';
+  });
+</script>
+</body>
+</html>

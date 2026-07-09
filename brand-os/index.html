@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand OS · Spacecadet Studio</title>
+<link rel="stylesheet" href="/brand-os/style.css">
+</head>
+<body>
+
+<div class="sc-page">
+  <header class="sc-topbar">
+    <div class="left">
+      <span class="sc-wordmark">Spacecadet Studio<span class="plus">+</span></span>
+    </div>
+    <div class="center">Brand OS · v1</div>
+    <div class="right sc-meta-lines">NYC, Planet Earth
+<span class="sc-clock">00:00:00</span></div>
+  </header>
+
+  <main style="display:flex; flex-direction:column; gap: var(--space-8); align-self: center; max-width: 1100px; width: 100%;">
+    <div>
+      <div class="sc-eyebrow">Locked tools · for a real brand</div>
+      <h1 class="sc-display">Brand<br>from tomorrow.</h1>
+    </div>
+
+    <div class="sc-lead">Every client gets a workshop with two locked tools — a copywriter that stays in your voice, an art director that stays in your look. Nothing else to configure.</div>
+
+    <div class="sc-grid-2" style="gap: var(--space-4);">
+      <a class="sc-card hover-lift" href="/brand-os/login">
+        <div class="sc-tag"><span class="num">01</span> Client</div>
+        <h2 class="sc-h2">Sign in</h2>
+        <div class="sc-lead" style="font-size: 15px;">Access your brand's copywriter + art director.</div>
+        <div class="sc-row" style="justify-content: flex-end;">
+          <span class="sc-pill mono">Enter →</span>
+        </div>
+      </a>
+      <a class="sc-card hover-lift" href="/brand-os/login?admin=1">
+        <div class="sc-tag"><span class="num">02</span> Admin</div>
+        <h2 class="sc-h2">Studio</h2>
+        <div class="sc-lead" style="font-size: 15px;">Create + edit brand configs. Paste guidelines or upload a Claude Design zip.</div>
+        <div class="sc-row" style="justify-content: flex-end;">
+          <span class="sc-pill mono">Enter →</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer class="sc-botbar">
+    <div class="left">
+      <a href="/" class="sc-pill small mono">← Explore</a>
+    </div>
+    <div class="center">Strategy · design · frontier tech</div>
+    <div class="right">All condition brand intelligence</div>
+  </footer>
+</div>
+
+<script src="/brand-os/starfield.js"></script>
+<script>
+  (async () => {
+    try {
+      const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
+      if (!r.ok) return;
+      const { slug, role } = await r.json();
+      if (role === 'admin') location.href = '/brand-os/admin';
+      else if (slug) location.href = `/brand-os/hub?slug=${encodeURIComponent(slug)}`;
+    } catch {}
+  })();
+</script>
+</body>
+</html>
