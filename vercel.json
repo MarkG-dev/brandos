@@ -3,7 +3,6 @@
     { "source": "/", "destination": "/brand-os/index.html" },
     { "source": "/brand-os", "destination": "/brand-os/index.html" },
     { "source": "/brand-os/login", "destination": "/brand-os/login.html" },
-    { "source": "/brand-os/brand", "destination": "/brand-os/brand.html" },
     { "source": "/brand-os/hub", "destination": "/brand-os/hub.html" },
     { "source": "/brand-os/copywriter", "destination": "/brand-os/copywriter.html" },
     { "source": "/brand-os/art-director", "destination": "/brand-os/art-director.html" },

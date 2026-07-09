@@ -11,7 +11,6 @@ import { verify, readCookie } from './lib/brand-os-auth.js';
 
 export const config = {
   matcher: [
-    '/brand-os/brand',
     '/brand-os/copywriter',
     '/brand-os/art-director',
     '/brand-os/admin',

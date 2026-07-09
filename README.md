@@ -17,7 +17,6 @@ Turn a brand's guidelines into an executable system: a client-facing hub with tw
 - `/brand-os/hub` — client hub (agents + assets)
 - `/brand-os/copywriter`, `/brand-os/art-director` — agent workshops
 - `/brand-os/admin` — brand config studio
-- `/brand-os/brand` — legacy workshop (kept for continuity)
 - `/<slug>` — shareable client URL (wildcard rewrite → login prefilled with slug)
 
 ## Environment variables

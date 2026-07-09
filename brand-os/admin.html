@@ -99,22 +99,25 @@
         <div class="sc-eyebrow" id="editorMode">Editing</div>
         <h1 class="sc-h1" id="editorTitle" style="margin-top: 6px;">—</h1>
       </div>
-      <a class="sc-pill mono small" href="/brand-os/admin">← All brands</a>
     </div>
 
-    <div class="sc-navrow">
-      <button class="sc-pill mono small active" data-tab="fields">Config</button>
-      <button class="sc-pill mono small" data-tab="assets">Assets</button>
-      <button class="sc-pill mono small" data-tab="prompts">Prompts</button>
-      <button class="sc-pill mono small" data-tab="usage">Usage</button>
-      <button class="sc-pill mono small" data-tab="zip">Upload zip</button>
-    </div>
-    <div class="sc-row" style="justify-content: space-between; margin-top: var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--sc-line); border-bottom: 1px solid var(--sc-line);">
-      <div class="sc-row">
-        <button class="sc-pill solid" id="save">Save →</button>
-        <button class="sc-pill mono small" id="preview">Preview prompts</button>
-        <button class="sc-pill mono small" id="githubCheck">Check GitHub</button>
+    <div class="sc-navrow" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+      <div class="sc-row" style="flex-wrap: wrap; gap: var(--space-2);">
+        <a class="sc-pill mono small" href="/brand-os/admin">← All brands</a>
+        <button class="sc-pill mono small active" data-tab="fields">Config</button>
+        <button class="sc-pill mono small" data-tab="assets">Assets</button>
+        <button class="sc-pill mono small" data-tab="prompts">Prompts</button>
+        <button class="sc-pill mono small" data-tab="usage">Usage</button>
+        <button class="sc-pill mono small" data-tab="zip">Upload zip</button>
       </div>
+      <div class="sc-row" style="flex-wrap: wrap; gap: var(--space-2);">
+        <button class="sc-pill mono small" id="save">Save</button>
+        <button class="sc-pill mono small" id="preview">Preview</button>
+        <button class="sc-pill mono small" id="githubCheck">GitHub</button>
+        <a class="sc-pill mono small" id="enterHubLink" href="#">Enter hub →</a>
+      </div>
+    </div>
+    <div class="sc-row" style="justify-content: flex-end; min-height: 16px;">
       <span class="sc-status" id="status"></span>
     </div>
     <pre id="githubCheckOut" class="sc-status mono" style="display:none; white-space:pre-wrap; padding: var(--space-3); border: 1px solid var(--sc-line); margin-top: var(--space-2); font-size: 12px; max-height: 400px; overflow: auto;"></pre>
@@ -461,6 +464,10 @@
     let pdfs = Array.isArray(b.assets?.pdfGuidelines) ? b.assets.pdfGuidelines.slice() : [];
     if (!pdfs.length && b.assets?.pdfGuidelinesUrl) pdfs = [{ name: 'Brand Guidelines.pdf', url: b.assets.pdfGuidelinesUrl }];
     renderPdfList(pdfs);
+    if (b.slug) {
+      const hubLink = document.getElementById('enterHubLink');
+      if (hubLink) hubLink.href = `/brand-os/hub?slug=${encodeURIComponent(b.slug)}`;
+    }
     document.getElementById('strategy_positioning').value = b.strategy?.positioning || '';
     document.getElementById('strategy_audience').value = b.strategy?.audience || '';
     document.getElementById('strategy_products').value = (b.strategy?.products || []).join('\n');
