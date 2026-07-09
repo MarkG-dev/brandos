@@ -1,8 +1,8 @@
 {
   "name": "Loop X",
   "slug": "example",
-  "passwordHash": "$2b$10$pJ7aYcvE0271ov2n40Oh9OZjPMDfVz0lP56BreTo6hYBNZF7IKgPi",
-  "createdAt": "2026-07-07T00:00:00.000Z",
+  "passwordHash": "$2a$10$irVHJ6MODe8KZMihwPMwBO4/Gm.RdHys71Ne9Aqlkj0scWArA7pxu",
+  "createdAt": "2026-07-09T19:07:06.620Z",
   "strategy": {
     "positioning": "Loop X builds machine intelligence for the most uncontrolled environments — mining, underground, dust, glare, total dark. Thermal perception that works with no tag, no map, and no light required. Where GPS fails, LiDAR blinds out, and cameras go dark, Loop X sees.",
     "audience": "Mine operators, autonomy engineers, and heavy-industry ops leads responsible for machine safety, uptime, and productivity in visibility-hostile environments. An operations lead should understand the value on the first scroll.",
@@ -35,12 +35,30 @@
   },
   "art": {
     "palette": [
-      { "name": "black", "hex": "#000000" },
-      { "name": "white", "hex": "#FFFFFF" },
-      { "name": "off-white", "hex": "#F7F7F7" },
-      { "name": "grey", "hex": "#C4C4C4" },
-      { "name": "deck grey", "hex": "#383838" },
-      { "name": "signal", "hex": "#FF0000" }
+      {
+        "name": "black",
+        "hex": "#000000"
+      },
+      {
+        "name": "white",
+        "hex": "#FFFFFF"
+      },
+      {
+        "name": "off-white",
+        "hex": "#F7F7F7"
+      },
+      {
+        "name": "grey",
+        "hex": "#C4C4C4"
+      },
+      {
+        "name": "deck grey",
+        "hex": "#383838"
+      },
+      {
+        "name": "signal",
+        "hex": "#FF0000"
+      }
     ],
     "photography": "Black-and-white, high-contrast, grainy. Terrain and rock; dust and particle clouds on black; cave / underground; thermal captures. Cool, austere-industrial. Always desaturated, pushed contrast.",
     "framing": "Wide, orthogonal. Square-edged and hairline-ruled. Full-bleed heroes with black protection gradients over imagery only where legibility demands it. No decorative gradients.",
@@ -56,16 +74,44 @@
   },
   "presets": {
     "copywriter": [
-      { "label": "Tighten", "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone. No hedging." },
-      { "label": "Rewrite as tagline", "prompt": "One line, max 8 words. UPPERCASE-worthy. Uncompromising." },
-      { "label": "Headline", "prompt": "A display headline in the brand voice. UPPERCASE. Declarative. Short." },
-      { "label": "Explain simply", "prompt": "Rewrite in plain language for an operations lead unfamiliar with the technology. Still the brand voice — restrained, confident, no hype." }
+      {
+        "label": "Tighten",
+        "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone."
+      },
+      {
+        "label": "Rewrite as tagline",
+        "prompt": "One line, max 8 words, in brand voice."
+      },
+      {
+        "label": "Headline",
+        "prompt": "A display headline in the brand voice. UPPERCASE if the brand direction calls for it."
+      },
+      {
+        "label": "Explain simply",
+        "prompt": "Rewrite in plain language for someone unfamiliar with the category."
+      }
     ],
     "artDirector": [
-      { "label": "Hero horizontal", "aspect": "3:2", "hint": "wide landscape composition, low horizon, negative space for wordmark bottom-left" },
-      { "label": "Product still", "aspect": "1:1", "hint": "product-first, sensor or module on black surface, hairline reflection, orthogonal composition" },
-      { "label": "Social square", "aspect": "1:1", "hint": "eye-level composition, headroom for wordmark, high-contrast, minimal background" },
-      { "label": "Story portrait", "aspect": "9:16", "hint": "vertical hero, subject centred low, tall negative space above for headline" }
+      {
+        "label": "Hero horizontal",
+        "aspect": "3:2",
+        "hint": "wide landscape composition, low horizon, headroom for wordmark"
+      },
+      {
+        "label": "Product still",
+        "aspect": "1:1",
+        "hint": "product-first, off-white surface, hairline shadow"
+      },
+      {
+        "label": "Social square",
+        "aspect": "1:1",
+        "hint": "eye-level composition, headroom for wordmark, negative space bottom-left"
+      },
+      {
+        "label": "Story portrait",
+        "aspect": "9:16",
+        "hint": "vertical, subject centred, minimal background clutter"
+      }
     ]
   },
   "model": {
@@ -74,7 +120,12 @@
   },
   "assets": {
     "assetLibraryUrl": "",
-    "pdfGuidelines": [],
+    "pdfGuidelines": [
+      {
+        "name": "LoopX — Guidelines.pdf",
+        "url": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/pdf/example/LoopX___Guidelines-IL066II1UxyxXKnB8OPvn63OhI6rem.pdf"
+      }
+    ],
     "guidelinesZipUrl": ""
   }
 }
