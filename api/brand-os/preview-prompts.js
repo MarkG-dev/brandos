@@ -1,28 +1,38 @@
 // Brand OS — compiled prompt previews.
 //
-//   GET /api/brand-os/preview-prompts?slug=<x>
-//   → { copywriter: { systemTemplate, taskExamples }, artDirector: { promptTemplate, exampleShot } }
+//   POST /api/brand-os/preview-prompts   body: { brand: {...current form config...} }
+//   GET  /api/brand-os/preview-prompts?slug=<x>   (legacy, reads from disk)
+//   → { copywriter: { systemTemplate, model, presets },
+//       artDirector: { promptTemplate, model, presets, apiParams } }
 //
-// Renders the exact system prompt / prompt merge the client tools use, so
-// admins can see what actually gets sent to Claude and Magnific.
+// POST compiles from the in-memory config the admin is editing — no slug
+// dependency, no disk read, always up to date with unsaved edits.
 
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
-
-  const slug = req.query?.slug || (new URL(req.url, 'http://x').searchParams.get('slug'));
-  if (!slug) return res.status(400).json({ error: 'slug required' });
-
   let brand;
-  try {
-    brand = JSON.parse(await readFile(join(process.cwd(), 'brands', `${slug}.json`), 'utf8'));
-  } catch {
-    return res.status(404).json({ error: `Brand ${slug} not found` });
+
+  if (req.method === 'POST') {
+    brand = req.body?.brand || {};
+    if (!brand.name) return res.status(400).json({ error: 'brand.name required in body' });
+  } else if (req.method === 'GET') {
+    const slug = req.query?.slug || (new URL(req.url, 'http://x').searchParams.get('slug'));
+    if (!slug) return res.status(400).json({ error: 'slug required' });
+    try {
+      brand = JSON.parse(await readFile(join(process.cwd(), 'brands', `${slug}.json`), 'utf8'));
+    } catch {
+      return res.status(404).json({ error: `Brand ${slug} not found` });
+    }
+  } else {
+    return res.status(405).json({ error: 'GET or POST' });
   }
 
-  // Mirror the exact template used by api/brand-os/copywriter.js
+  return res.status(200).json(compile(brand));
+}
+
+function compile(brand) {
   const examples = (brand.voice?.examples || []).map(e => `- ${e}`).join('\n') || '(none provided)';
   const doNotUse = (brand.voice?.doNotUse || []).map(d => `- ${d}`).join('\n') || '(none)';
   const strategy = brand.strategy || {};
@@ -49,7 +59,6 @@ ${doNotUse}
 
 Return ONLY the rewritten text. No preface, no explanation, no quote marks around it.`;
 
-  // Mirror the exact template used by api/brand-os/art-director.js
   const palette = (brand.art?.palette || []).map(p => `${p.name} ${p.hex}`).join(', ');
   const artTemplate = [
     '{USER_PROMPT}',
@@ -60,7 +69,7 @@ Return ONLY the rewritten text. No preface, no explanation, no quote marks aroun
     palette && `Palette: ${palette}.`,
   ].filter(Boolean).join(' ');
 
-  return res.status(200).json({
+  return {
     copywriter: {
       systemTemplate: copywriterSystem,
       model: brand.model?.copywriter || 'claude-opus-4-8',
@@ -81,5 +90,5 @@ Return ONLY the rewritten text. No preface, no explanation, no quote marks aroun
         hdr: 20,
       },
     },
-  });
+  };
 }

@@ -122,11 +122,40 @@ export default async function handler(req, res) {
     if (!putRes.ok) {
       return res.status(putRes.status).json({ error: putData.message || 'GitHub PUT failed', raw: putData });
     }
+
+    // If the client told us this is a rename, delete the old file.
+    let renamedFrom = null;
+    const oldSlug = (b.renameFrom || '').trim();
+    if (oldSlug && oldSlug !== b.slug) {
+      const oldPath = `brands/${oldSlug}.json`;
+      const oldGet = await fetch(
+        `https://api.github.com/repos/${repo}/contents/${oldPath}?ref=${encodeURIComponent(branch)}`,
+        { headers: authHeaders(pat) },
+      );
+      if (oldGet.ok) {
+        const oldMeta = await oldGet.json();
+        await fetch(
+          `https://api.github.com/repos/${repo}/contents/${oldPath}`,
+          {
+            method: 'DELETE',
+            headers: { ...authHeaders(pat), 'content-type': 'application/json' },
+            body: JSON.stringify({
+              message: `Brand OS: rename ${oldSlug} → ${b.slug}`,
+              sha: oldMeta.sha,
+              branch,
+            }),
+          },
+        );
+        renamedFrom = oldSlug;
+      }
+    }
+
     return res.status(200).json({
       committed: true,
       path,
       sha: putData.content?.sha,
       commit: putData.commit?.html_url,
+      renamedFrom,
     });
   } catch (e) {
     return res.status(500).json({ error: e.message });

@@ -109,11 +109,6 @@
       <button class="sc-pill mono small" data-tab="usage">Usage</button>
       <button class="sc-pill mono small" data-tab="zip">Upload zip</button>
     </div>
-    <div class="sc-navrow" style="margin-top: 4px;">
-      <a class="sc-pill mono small" id="enterHubLink" href="#">Enter hub →</a>
-      <a class="sc-pill mono small" id="enterWorkshopLink" href="#">Legacy workshop →</a>
-    </div>
-
     <div class="sc-row" style="justify-content: space-between; margin-top: var(--space-4); padding: var(--space-3) 0; border-top: 1px solid var(--sc-line); border-bottom: 1px solid var(--sc-line);">
       <div class="sc-row">
         <button class="sc-pill solid" id="save">Save →</button>
@@ -215,10 +210,9 @@
     <section id="tab-fields" style="display: flex; flex-direction: column; gap: var(--space-5);">
       <div class="sc-card">
         <div class="sc-eyebrow">Brand</div>
-        <div class="sc-grid-2">
-          <div class="sc-field"><label>Name</label><input id="name" placeholder="Acme"></div>
-          <div class="sc-field mono"><label>Slug</label><input id="slug" placeholder="acme"></div>
-        </div>
+        <div class="sc-field"><label>Name</label><input id="name" placeholder="Acme"></div>
+        <div class="sc-eyebrow mono" style="opacity: 0.7;">Client URL · <span id="urlPreview" style="color: var(--sc-fg);">—</span></div>
+        <input id="slug" type="hidden">
         <div class="sc-field mono"><label id="passwordLabel">Client password</label><input id="password" type="password" placeholder="something the client will remember"></div>
         <div class="sc-eyebrow" id="passwordHint" style="display:none;">Leave blank to keep the existing password. Fill to reset.</div>
       </div>
@@ -408,15 +402,18 @@
     // Palette live-swatches
     document.getElementById('palette').addEventListener('input', renderSwatches);
 
-    // Slug auto from name (only when new)
-    document.getElementById('name').addEventListener('input', e => {
-      if (!isNew) return;
-      const slugEl = document.getElementById('slug');
-      if (!slugEl.dataset.touched) {
-        slugEl.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
-      }
-    });
-    document.getElementById('slug').addEventListener('input', e => e.target.dataset.touched = '1');
+    // Slug always follows Name — user never sees or manages it directly.
+    function kebab(s) {
+      return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+    }
+    function syncSlugFromName() {
+      const name = document.getElementById('name').value;
+      const slug = kebab(name);
+      document.getElementById('slug').value = slug;
+      const preview = document.getElementById('urlPreview');
+      preview.textContent = slug ? `${location.host}/${slug}` : '—';
+    }
+    document.getElementById('name').addEventListener('input', syncSlugFromName);
 
     document.getElementById('save').addEventListener('click', doSave);
     document.getElementById('preview').addEventListener('click', () => {
@@ -455,6 +452,8 @@
   function fillForm(b) {
     document.getElementById('name').value = b.name || '';
     document.getElementById('slug').value = b.slug || '';
+    const preview = document.getElementById('urlPreview');
+    if (preview) preview.textContent = b.slug ? `${location.host}/${b.slug}` : '—';
     // Assets — new simplified schema, with legacy fallbacks
     const legacyBrand = b.assets?.brandAssetsUrl || '';
     document.getElementById('asset_library').value = b.assets?.assetLibraryUrl || legacyBrand;
@@ -462,11 +461,6 @@
     let pdfs = Array.isArray(b.assets?.pdfGuidelines) ? b.assets.pdfGuidelines.slice() : [];
     if (!pdfs.length && b.assets?.pdfGuidelinesUrl) pdfs = [{ name: 'Brand Guidelines.pdf', url: b.assets.pdfGuidelinesUrl }];
     renderPdfList(pdfs);
-    // Enter workshop link
-    if (b.slug) {
-      document.getElementById('enterHubLink').href = `/brand-os/hub?slug=${encodeURIComponent(b.slug)}`;
-      document.getElementById('enterWorkshopLink').href = `/brand-os/brand?slug=${encodeURIComponent(b.slug)}`;
-    }
     document.getElementById('strategy_positioning').value = b.strategy?.positioning || '';
     document.getElementById('strategy_audience').value = b.strategy?.audience || '';
     document.getElementById('strategy_products').value = (b.strategy?.products || []).join('\n');
@@ -547,8 +541,7 @@
     if (!isNew && !cfg.password) delete cfg.password; // preserve existing
     const originalSlug = document.getElementById('slug').dataset.originalSlug || '';
     if (!isNew && originalSlug && originalSlug !== cfg.slug) {
-      const ok = confirm(`Rename slug "${originalSlug}" → "${cfg.slug}"?\n\nThis creates a new brand at the new slug. Any uploaded assets (PDFs, ref images, Agent Guidelines) stay at the old path — re-upload them under the new slug. The old brand file at "${originalSlug}" is not auto-deleted; remove it manually if you want.`);
-      if (!ok) { setStatus('Rename cancelled.', 'err'); return; }
+      cfg.renameFrom = originalSlug;
     }
     setStatus('Saving…');
     try {
@@ -560,8 +553,9 @@
       if (!r.ok) throw new Error(j.error || 'Save failed');
       if (j.committed) setStatus(`Committed. ${j.commit || j.path}`, 'ok');
       else setStatus('Saved locally. GITHUB_PAT not set — manual commit required.', 'ok');
-      // After creating a new brand, redirect to its editor
-      if (isNew) setTimeout(() => location.href = `?slug=${encodeURIComponent(cfg.slug)}`, 800);
+      // Redirect to the new slug's editor after a create or rename.
+      const shouldRedirect = isNew || j.renamedFrom;
+      if (shouldRedirect) setTimeout(() => location.href = `?slug=${encodeURIComponent(cfg.slug)}`, 800);
     } catch (e) { setStatus(e.message, 'err'); }
   }
 
@@ -623,23 +617,21 @@
   }
 
   async function refreshPrompts() {
-    const formSlug = document.getElementById('slug').value.trim();
-    const originalSlug = document.getElementById('slug').dataset.originalSlug || '';
-    const slug = originalSlug || formSlug; // preview the LAST SAVED brand, not the pending rename
-    if (!slug || isNew) {
-      document.getElementById('prompt1').textContent = 'Save the brand first — then previews render live.';
+    const cfg = buildConfig();
+    if (!cfg.name) {
+      document.getElementById('prompt1').textContent = 'Enter a name — previews render live from the form.';
       document.getElementById('prompt2').textContent = '';
       document.getElementById('apiParams').textContent = '';
       return;
     }
     try {
-      const r = await fetch(`/api/brand-os/preview-prompts?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const r = await fetch('/api/brand-os/preview-prompts', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        credentials: 'same-origin', body: JSON.stringify({ brand: cfg }),
+      });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Preview failed');
-      const renameNote = (originalSlug && formSlug && formSlug !== originalSlug)
-        ? `[Previewing SAVED brand "${originalSlug}". Rename to "${formSlug}" hasn't been saved yet.]\n\n`
-        : '';
-      document.getElementById('prompt1').textContent = renameNote + j.copywriter.systemTemplate;
+      document.getElementById('prompt1').textContent = j.copywriter.systemTemplate;
       document.getElementById('pmodel1').textContent = j.copywriter.model;
       document.getElementById('prompt2').textContent = j.artDirector.promptTemplate;
       document.getElementById('pmodel2').textContent = j.artDirector.model;
