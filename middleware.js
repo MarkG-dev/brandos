@@ -22,6 +22,7 @@ export const config = {
     '/api/brand-os/preview-prompts',
     '/api/brand-os/blob-token',
     '/api/brand-os/usage',
+    '/api/brand-os/github-check',
   ],
 };
 
@@ -32,7 +33,8 @@ export default async function middleware(req) {
     || url.pathname.endsWith('/save-brand')
     || url.pathname.endsWith('/brands')
     || url.pathname.endsWith('/preview-prompts')
-    || url.pathname.endsWith('/usage');
+    || url.pathname.endsWith('/usage')
+    || url.pathname.endsWith('/github-check');
 
   const secret = process.env.AUTH_SECRET;
   if (!secret) {

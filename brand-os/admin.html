@@ -118,9 +118,11 @@
       <div class="sc-row">
         <button class="sc-pill solid" id="save">Save →</button>
         <button class="sc-pill mono small" id="preview">Preview prompts</button>
+        <button class="sc-pill mono small" id="githubCheck">Check GitHub</button>
       </div>
       <span class="sc-status" id="status"></span>
     </div>
+    <pre id="githubCheckOut" class="sc-status mono" style="display:none; white-space:pre-wrap; padding: var(--space-3); border: 1px solid var(--sc-line); margin-top: var(--space-2); font-size: 12px; max-height: 400px; overflow: auto;"></pre>
 
     <section id="tab-zip" style="display: none; flex-direction: column; gap: var(--space-5);">
       <div class="sc-card">
@@ -420,6 +422,16 @@
     document.getElementById('preview').addEventListener('click', () => {
       document.querySelector('[data-tab="prompts"]').click();
     });
+    document.getElementById('githubCheck').addEventListener('click', async () => {
+      const out = document.getElementById('githubCheckOut');
+      out.style.display = 'block';
+      out.textContent = 'Probing GitHub…';
+      try {
+        const r = await fetch('/api/brand-os/github-check', { credentials: 'same-origin' });
+        const j = await r.json();
+        out.textContent = JSON.stringify(j, null, 2);
+      } catch (e) { out.textContent = 'Failed: ' + e.message; }
+    });
 
     initZipFlow();
     initAssetsTab();
@@ -611,7 +623,9 @@
   }
 
   async function refreshPrompts() {
-    const slug = document.getElementById('slug').value.trim();
+    const formSlug = document.getElementById('slug').value.trim();
+    const originalSlug = document.getElementById('slug').dataset.originalSlug || '';
+    const slug = originalSlug || formSlug; // preview the LAST SAVED brand, not the pending rename
     if (!slug || isNew) {
       document.getElementById('prompt1').textContent = 'Save the brand first — then previews render live.';
       document.getElementById('prompt2').textContent = '';
@@ -622,7 +636,10 @@
       const r = await fetch(`/api/brand-os/preview-prompts?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Preview failed');
-      document.getElementById('prompt1').textContent = j.copywriter.systemTemplate;
+      const renameNote = (originalSlug && formSlug && formSlug !== originalSlug)
+        ? `[Previewing SAVED brand "${originalSlug}". Rename to "${formSlug}" hasn't been saved yet.]\n\n`
+        : '';
+      document.getElementById('prompt1').textContent = renameNote + j.copywriter.systemTemplate;
       document.getElementById('pmodel1').textContent = j.copywriter.model;
       document.getElementById('prompt2').textContent = j.artDirector.promptTemplate;
       document.getElementById('pmodel2').textContent = j.artDirector.model;
