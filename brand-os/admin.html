@@ -103,7 +103,7 @@
 
     <div class="sc-navrow" style="justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
       <div class="sc-row" style="flex-wrap: wrap; gap: var(--space-2);">
-        <a class="sc-pill mono small" href="/brand-os/admin">← All brands</a>
+        <a class="sc-pill mono small" href="/admin">← All brands</a>
         <button class="sc-pill mono small active" data-tab="fields">Config</button>
         <button class="sc-pill mono small" data-tab="assets">Assets</button>
         <button class="sc-pill mono small" data-tab="prompts">Prompts</button>
@@ -306,9 +306,9 @@
   // Guard
   (async () => {
     const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
-    if (!r.ok) { location.href = `/brand-os/login?admin=1&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
+    if (!r.ok) { location.href = `/login?admin=1&next=${encodeURIComponent(location.pathname + location.search)}`; return; }
     const me = await r.json();
-    if (me.role !== 'admin') { location.href = '/brand-os/login?admin=1'; return; }
+    if (me.role !== 'admin') { location.href = '/login?admin=1'; return; }
 
     if (isEditor) initEditor();
     else initList();
@@ -317,7 +317,7 @@
   document.getElementById('logout').addEventListener('click', async (e) => {
     e.preventDefault();
     await fetch('/api/brand-os/session', { method: 'DELETE', credentials: 'same-origin' });
-    location.href = '/brand-os';
+    location.href = '/';
   });
 
   /* -----------------------------------------------------------
@@ -466,7 +466,7 @@
     renderPdfList(pdfs);
     if (b.slug) {
       const hubLink = document.getElementById('enterHubLink');
-      if (hubLink) hubLink.href = `/brand-os/hub?slug=${encodeURIComponent(b.slug)}`;
+      if (hubLink) hubLink.href = `/${encodeURIComponent(b.slug)}`;
     }
     document.getElementById('strategy_positioning').value = b.strategy?.positioning || '';
     document.getElementById('strategy_audience').value = b.strategy?.audience || '';

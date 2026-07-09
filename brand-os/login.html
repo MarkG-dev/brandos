@@ -39,7 +39,7 @@
   </main>
 
   <footer class="sc-botbar">
-    <div class="left"><a href="/brand-os" class="sc-pill small mono">← Home</a></div>
+    <div class="left"><a href="/" class="sc-pill small mono">← Home</a></div>
     <div class="center"></div>
     <div class="right">Locked to your brand</div>
   </footer>
@@ -49,7 +49,8 @@
 <script>
   const params = new URLSearchParams(location.search);
   const isAdmin = params.get('admin') === '1';
-  const presetSlug = params.get('slug') || '';
+  const pathSlug = (location.pathname.match(/^\/([a-z][a-z0-9-]{1,40})\/?$/) || [])[1];
+  const presetSlug = params.get('slug') || pathSlug || '';
   const brandName = params.get('brand') || '';
   const next = params.get('next') || '';
   const label = document.getElementById('mode-label');
@@ -64,7 +65,7 @@
     f1.placeholder = 'admin username';
     f1.name = 'username';
     l1.textContent = 'Username';
-    modeSwitch.href = '/brand-os/login';
+    modeSwitch.href = '/login';
     modeSwitch.textContent = 'Client sign-in';
   } else if (presetSlug) {
     // Client-shareable link: pre-fill the slug, hide the field, and treat as a single-password prompt.
@@ -110,8 +111,8 @@
       const j = await r.json();
       if (!r.ok) { msg.className = 'sc-status err'; msg.textContent = j.error || 'Sign-in failed'; return; }
       msg.className = 'sc-status ok'; msg.textContent = 'OK.';
-      if (j.role === 'admin') location.href = next || '/brand-os/admin';
-      else location.href = next || `/brand-os/hub?slug=${encodeURIComponent(j.slug)}`;
+      if (j.role === 'admin') location.href = next || '/admin';
+      else location.href = next || `/${encodeURIComponent(j.slug)}`;
     } catch (err) {
       msg.className = 'sc-status err'; msg.textContent = err.message;
     }

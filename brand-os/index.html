@@ -27,7 +27,7 @@
     <div class="sc-lead">Every client gets a workshop with two locked tools — a copywriter that stays in your voice, an art director that stays in your look. Nothing else to configure.</div>
 
     <div class="sc-grid-2" style="gap: var(--space-4);">
-      <a class="sc-card hover-lift" href="/brand-os/login">
+      <a class="sc-card hover-lift" href="/login">
         <div class="sc-tag"><span class="num">01</span> Client</div>
         <h2 class="sc-h2">Sign in</h2>
         <div class="sc-lead" style="font-size: 15px;">Access your brand's copywriter + art director.</div>
@@ -35,7 +35,7 @@
           <span class="sc-pill mono">Enter →</span>
         </div>
       </a>
-      <a class="sc-card hover-lift" href="/brand-os/login?admin=1">
+      <a class="sc-card hover-lift" href="/login?admin=1">
         <div class="sc-tag"><span class="num">02</span> Admin</div>
         <h2 class="sc-h2">Studio</h2>
         <div class="sc-lead" style="font-size: 15px;">Create + edit brand configs. Paste guidelines or upload a Claude Design zip.</div>
@@ -62,8 +62,8 @@
       const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
       if (!r.ok) return;
       const { slug, role } = await r.json();
-      if (role === 'admin') location.href = '/brand-os/admin';
-      else if (slug) location.href = `/brand-os/hub?slug=${encodeURIComponent(slug)}`;
+      if (role === 'admin') location.href = '/admin';
+      else if (slug) location.href = `/${encodeURIComponent(slug)}`;
     } catch {}
   })();
 </script>

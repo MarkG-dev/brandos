@@ -12,12 +12,15 @@ Turn a brand's guidelines into an executable system: a client-facing hub with tw
 
 ## Routes
 
-- `/` — Brand OS landing
-- `/brand-os/login` — sign in (admin or client)
-- `/brand-os/hub` — client hub (agents + assets)
-- `/brand-os/copywriter`, `/brand-os/art-director` — agent workshops
-- `/brand-os/admin` — brand config studio
-- `/<slug>` — shareable client URL (wildcard rewrite → login prefilled with slug)
+- `/` — Brand OS landing (Client / Admin cards)
+- `/login` — client login
+- `/login?admin=1` — admin login
+- `/admin` — brand config studio
+- `/<slug>` — client hub (login prefilled with slug if not authed)
+- `/<slug>/copywriter`, `/<slug>/art-director` — agent workshops
+
+Middleware resolves `/<slug>` paths — rewrites to `/brand-os/hub.html` (or
+`/brand-os/login.html`) internally so the browser URL stays `/loopx`.
 
 ## Environment variables
 

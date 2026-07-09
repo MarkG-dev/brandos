@@ -105,17 +105,18 @@
 <script src="/brand-os/starfield.js"></script>
 <script>
   const params = new URLSearchParams(location.search);
-  const slug = params.get('slug');
-  document.getElementById('backLink').href = `/brand-os/hub?slug=${encodeURIComponent(slug || '')}`;
+  const pathSlug = (location.pathname.match(/^\/([a-z][a-z0-9-]{1,40})\/(copywriter|art-director)\/?$/) || [])[1];
+  const slug = params.get('slug') || pathSlug;
+  document.getElementById('backLink').href = `/${encodeURIComponent(slug || '')}`;
 
   const HIST_KEY = `brandos:copywriter:${slug}`;
   let activePreset = null;
   let activeWordCount = null;
 
   (async () => {
-    if (!slug) { location.href = '/brand-os/login'; return; }
+    if (!slug) { location.href = '/login'; return; }
     const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
-    if (!r.ok) { location.href = `/brand-os/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
+    if (!r.ok) { location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
     const me = await r.json();
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · COPYWRITER`;
 
@@ -202,7 +203,7 @@
   document.getElementById('logout').addEventListener('click', async (e) => {
     e.preventDefault();
     await fetch('/api/brand-os/session', { method: 'DELETE', credentials: 'same-origin' });
-    location.href = '/brand-os';
+    location.href = '/';
   });
 
   function pushHistory(entry) {
