@@ -1,8 +1,8 @@
 {
   "name": "Loop X",
   "slug": "loopx",
-  "passwordHash": "$2a$10$3Y5tn0ME5DZejQ3cRq.nXeFj.kFpWyUlfRVOoM2Kt1VMifvqLL8XG",
-  "createdAt": "2026-07-09T19:06:24.600Z",
+  "passwordHash": "$2a$10$RE3aNbxanbcHxdHoTvhs/O76DbwsDW3m4Esak91.XVEkdiqH9hQky",
+  "createdAt": "2026-07-09T19:17:14.433Z",
   "strategy": {
     "positioning": "Loop X builds machine intelligence for the most uncontrolled environments — mining, underground, dust, glare, total dark. Thermal perception that works with no tag, no map, and no light required. Where GPS fails, LiDAR blinds out, and cameras go dark, Loop X sees.",
     "audience": "Mine operators, autonomy engineers, and heavy-industry ops leads responsible for machine safety, uptime, and productivity in visibility-hostile environments. An operations lead should understand the value on the first scroll.",
