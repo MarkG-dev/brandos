@@ -381,7 +381,7 @@
         const b = await r.json();
         if (!r.ok) throw new Error(b.error || 'Load failed');
         fillForm(b);
-        document.getElementById('slug').disabled = true;
+        document.getElementById('slug').dataset.originalSlug = b.slug || '';
         document.getElementById('passwordLabel').textContent = 'Reset password (optional)';
         document.getElementById('passwordHint').style.display = '';
       } catch (e) {
@@ -532,6 +532,11 @@
       setStatus('New brand needs a password.', 'err'); return;
     }
     if (!isNew && !cfg.password) delete cfg.password; // preserve existing
+    const originalSlug = document.getElementById('slug').dataset.originalSlug || '';
+    if (!isNew && originalSlug && originalSlug !== cfg.slug) {
+      const ok = confirm(`Rename slug "${originalSlug}" → "${cfg.slug}"?\n\nThis creates a new brand at the new slug. Any uploaded assets (PDFs, ref images, Agent Guidelines) stay at the old path — re-upload them under the new slug. The old brand file at "${originalSlug}" is not auto-deleted; remove it manually if you want.`);
+      if (!ok) { setStatus('Rename cancelled.', 'err'); return; }
+    }
     setStatus('Saving…');
     try {
       const r = await fetch('/api/brand-os/save-brand', {
