@@ -152,7 +152,7 @@
       const card = document.createElement('div');
       card.className = 'lib-card';
       const when = fmtDate(o.ts);
-      const tag = [o.preset, when].filter(Boolean).join(' · ');
+      const tag = [o.preset, o.author, when].filter(Boolean).join(' · ');
 
       if (o.type === 'image' && o.imageUrl) {
         card.innerHTML = `

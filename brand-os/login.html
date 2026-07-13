@@ -26,6 +26,10 @@
         <label for="f1" id="l1">Brand slug</label>
         <input type="text" id="f1" name="slug" placeholder="acme" autocomplete="username" required>
       </div>
+      <div class="sc-field mono" id="emailField" style="display:none;">
+        <label for="femail">Email</label>
+        <input type="email" id="femail" name="email" placeholder="you@company.com — or leave blank for team password" autocomplete="email">
+      </div>
       <div class="sc-field mono">
         <label for="f2">Password</label>
         <input type="password" id="f2" name="password" autocomplete="current-password" required>
@@ -71,6 +75,7 @@
     // Client-shareable link: pre-fill the slug, hide the field, and treat as a single-password prompt.
     f1.value = presetSlug;
     f1.parentElement.style.display = 'none';
+    document.getElementById('emailField').style.display = '';
     label.textContent = 'Brand OS';
     title.textContent = 'Enter to continue.';
     modeSwitch.style.display = 'none';

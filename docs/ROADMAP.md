@@ -18,29 +18,31 @@ configures, clients consume. Target price point $500–2000/mo per brand.
 - Admin studio: config, assets, preset editor, compiled-prompt preview,
   per-brand usage + cost rollups, GitHub diagnostic
 - Brand configs in git (versioned); saves preserve fields the UI doesn't send
+- Copywriter Write/Rewrite modes; brand-driven preset pills
+- **Studio-managed users** — Users tab in admin: add/remove/disable/reset,
+  stored on the brand JSON (no external DB, no env vars). Clients sign in
+  with email + personal password at the brand URL; shared team password
+  still works alongside. Outputs attributed by name in the Library.
 
 ## Next up (in order)
 
-### 1. User permissions
-Named users per brand, invited by the studio — NOT self-serve signup.
-- Admin creates users: name + email + per-user password (or magic invite link)
-- Cookie payload gains `userId`; outputs + usage get per-user attribution
-- Revoke a single person without rotating the brand password
-- Storage: users array in brand JSON is fine to ~15–20 clients; Supabase after
-- **Self-serve account creation (client invites their own team): deliberately
-  deferred.** Needs email verification, password reset, abuse handling —
-  a real auth system. Revisit when ≥3 brands are live. (Decision 2026-07:
-  studio-managed accounts give 80% of the value at 20% of the surface.)
-
-### 2. HTML asset generation ("Design" agent — 4th tile)
+### 1. HTML asset generation ("Design" agent — 4th tile)
 - Landing pages, one-page proposals, social carousel HTML, email templates,
   deck slides — rendered against the brand's design system
 - Primed by the Agent Guidelines ZIP (design-system format)
 - Outputs land in the Library like everything else
+- NOTE: serverless functions at 12/12 (Vercel Hobby cap) — retire
+  github-check.js or consolidate an endpoint before adding the next function
 
-### 3. Brand chatbot ("Ask" agent)
+### 2. Brand chatbot ("Ask" agent)
 - "What's our tagline?", "Can I say X?", "What's our position on Y?"
 - Needs a messages[] endpoint (copywriter is one-shot today)
+
+### Deferred: self-serve account creation
+Client invites their own team — needs email verification, password reset,
+abuse handling: a real auth system. Revisit when ≥3 brands are live.
+(Decision 2026-07: studio-managed accounts give 80% of the value at 20%
+of the surface. Supabase is the likely backend when this lands.)
 
 ## Later (v3 — don't scope-creep these in)
 

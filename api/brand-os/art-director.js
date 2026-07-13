@@ -157,7 +157,7 @@ export default async function handler(req, res) {
             preset: presetLabel || null,
             model,
             aspect: preset.aspect || '1:1',
-            author: payload.slug === '__admin__' ? 'admin' : payload.slug,
+            author: payload.user?.name || (payload.slug === '__admin__' ? 'admin' : payload.slug),
             sourceUrl: magnificUrl,
           }, { rehost: elapsed < 40000 });
         } catch (e) {

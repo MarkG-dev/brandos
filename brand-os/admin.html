@@ -107,6 +107,7 @@
         <button class="sc-pill mono small active" data-tab="fields">Config</button>
         <button class="sc-pill mono small" data-tab="assets">Assets</button>
         <button class="sc-pill mono small" data-tab="presets">Presets</button>
+        <button class="sc-pill mono small" data-tab="users">Users</button>
         <button class="sc-pill mono small" data-tab="prompts">Prompts</button>
         <button class="sc-pill mono small" data-tab="usage">Usage</button>
         <button class="sc-pill mono small" data-tab="zip">Upload zip</button>
@@ -186,6 +187,24 @@
         <div class="sc-row"><button class="sc-pill mono small" id="adPresetAdd">＋ Add preset</button></div>
       </div>
       <div class="sc-eyebrow">Labels appear as pills in the workshops. Prompts and hints stay server-side — clients never see them. Save to apply.</div>
+    </section>
+
+    <section id="tab-users" style="display: none; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-eyebrow">Team · named sign-ins for this brand</div>
+        <div id="userList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <div class="sc-status" id="usersStatus"></div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">Add user</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end;">
+          <div class="sc-field"><label>Name</label><input id="nu_name" placeholder="Jane Doe"></div>
+          <div class="sc-field mono"><label>Email</label><input id="nu_email" type="email" placeholder="jane@company.com"></div>
+          <div class="sc-field mono"><label>Password</label><input id="nu_pass" type="text" placeholder="something memorable"></div>
+          <button class="sc-pill mono small" id="nu_add" style="height: 40px;">Add →</button>
+        </div>
+      </div>
+      <div class="sc-eyebrow">Users sign in at the brand URL with email + their own password. The shared team password keeps working alongside. Changes apply immediately — no redeploy wait.</div>
     </section>
 
     <section id="tab-usage" style="display: none; flex-direction: column; gap: var(--space-5);">
@@ -424,13 +443,14 @@
     document.querySelectorAll('[data-tab]').forEach(t => t.addEventListener('click', () => {
       document.querySelectorAll('[data-tab]').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      ['fields', 'assets', 'presets', 'prompts', 'usage', 'zip'].forEach(name => {
+      ['fields', 'assets', 'presets', 'users', 'prompts', 'usage', 'zip'].forEach(name => {
         const el = document.getElementById('tab-' + name);
         if (!el) return;
         el.style.display = t.dataset.tab === name ? 'flex' : 'none';
       });
       if (t.dataset.tab === 'prompts') refreshPrompts();
       if (t.dataset.tab === 'usage') refreshUsage();
+      if (t.dataset.tab === 'users') loadUsers();
     }));
 
     // Palette live-swatches
@@ -533,6 +553,89 @@
     document.getElementById('cwPresetList').appendChild(cwPresetRow()));
   document.getElementById('adPresetAdd').addEventListener('click', () =>
     document.getElementById('adPresetList').appendChild(adPresetRow()));
+
+  // ---- Users ------------------------------------------------------------
+  function usersSlug() {
+    return document.getElementById('slug').dataset.originalSlug
+      || document.getElementById('slug').value.trim();
+  }
+  function setUsersStatus(text, cls = '') {
+    const s = document.getElementById('usersStatus');
+    s.textContent = text; s.className = 'sc-status ' + cls;
+  }
+  async function loadUsers() {
+    const slug = usersSlug();
+    const listEl = document.getElementById('userList');
+    if (!slug || isNew) {
+      listEl.innerHTML = '<div class="sc-status">Save the brand first — then add users.</div>';
+      return;
+    }
+    setUsersStatus('Loading…');
+    try {
+      const r = await fetch(`/api/brand-os/users?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Load failed');
+      renderUsers(j.users);
+      setUsersStatus(j.users.length ? '' : 'No users yet — the shared team password is the only way in.');
+    } catch (e) { setUsersStatus(e.message, 'err'); }
+  }
+  function renderUsers(users) {
+    const listEl = document.getElementById('userList');
+    listEl.innerHTML = '';
+    users.forEach(u => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:grid; grid-template-columns: 1fr 1.2fr auto auto auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--sc-hairline);';
+      row.innerHTML = `
+        <span style="${u.disabled ? 'opacity:0.4; text-decoration:line-through;' : ''}">${escapeHtml(u.name)}</span>
+        <span class="sc-eyebrow" style="text-transform:none;">${escapeHtml(u.email || '—')}</span>
+        <button class="sc-pill mono small" data-act="reset-password">Reset PW</button>
+        <button class="sc-pill mono small" data-act="toggle">${u.disabled ? 'Enable' : 'Disable'}</button>
+        <button class="sc-pill mono small" data-act="remove" title="Remove">×</button>`;
+      row.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('click', () => userAction(btn.dataset.act, u));
+      });
+      listEl.appendChild(row);
+    });
+  }
+  async function userAction(action, u) {
+    const body = { slug: usersSlug(), action, userId: u.id };
+    if (action === 'remove' && !confirm(`Remove ${u.name}? They lose access immediately.`)) return;
+    if (action === 'reset-password') {
+      const pw = prompt(`New password for ${u.name}:`);
+      if (!pw) return;
+      body.password = pw;
+    }
+    setUsersStatus('Working…');
+    try {
+      const r = await fetch('/api/brand-os/users', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        credentials: 'same-origin', body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Failed');
+      renderUsers(j.users);
+      setUsersStatus('Done — committed.', 'ok');
+    } catch (e) { setUsersStatus(e.message, 'err'); }
+  }
+  document.getElementById('nu_add').addEventListener('click', async () => {
+    const name = document.getElementById('nu_name').value.trim();
+    const email = document.getElementById('nu_email').value.trim();
+    const password = document.getElementById('nu_pass').value;
+    if (!name || !email || !password) { setUsersStatus('Name, email, and password all required.', 'err'); return; }
+    setUsersStatus('Adding…');
+    try {
+      const r = await fetch('/api/brand-os/users', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ slug: usersSlug(), action: 'add', name, email, password }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Failed');
+      renderUsers(j.users);
+      ['nu_name', 'nu_email', 'nu_pass'].forEach(id => document.getElementById(id).value = '');
+      setUsersStatus(`Added ${name} — they can sign in now at /${usersSlug()}.`, 'ok');
+    } catch (e) { setUsersStatus(e.message, 'err'); }
+  });
 
   function fillForm(b) {
     document.getElementById('name').value = b.name || '';

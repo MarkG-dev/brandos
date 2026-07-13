@@ -26,6 +26,7 @@ export const config = {
     '/api/brand-os/usage',
     '/api/brand-os/github-check',
     '/api/brand-os/outputs',
+    '/api/brand-os/users',
     // Catch-all for slug routes; excludes reserved directories and any file with a dot.
     '/((?!brand-os|api|_next|_vercel|.*\\..*).*)',
   ],
@@ -65,7 +66,7 @@ export default async function middleware(req) {
   // API gates
   if (isApi) {
     if (!payload) return json(401, { error: 'Not signed in' });
-    const adminOnly = ['save-brand', 'brands', 'preview-prompts', 'usage', 'github-check']
+    const adminOnly = ['save-brand', 'brands', 'preview-prompts', 'usage', 'github-check', 'users']
       .some(x => p.endsWith('/' + x));
     if (adminOnly && payload.role !== 'admin') return json(403, { error: 'Admin only' });
     return; // pass through to the function

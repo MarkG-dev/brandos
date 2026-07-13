@@ -101,7 +101,7 @@ export default async function handler(req, res) {
         preset: presetLabel || null,
         wordCount: Number.isFinite(wc) && wc >= 5 && wc <= 500 ? wc : null,
         model,
-        author: payload.slug === '__admin__' ? 'admin' : payload.slug,
+        author: payload.user?.name || (payload.slug === '__admin__' ? 'admin' : payload.slug),
       });
     } catch (e) {
       console.error('output save failed:', e.message);

@@ -82,6 +82,8 @@ export default async function handler(req, res) {
     slug: b.slug,
     passwordHash,
     createdAt: existing?.createdAt || new Date().toISOString(),
+    // Users are managed via /api/brand-os/users — always carried through.
+    users: existing?.users || [],
     strategy: {
       positioning: b.strategy?.positioning || '',
       audience: b.strategy?.audience || '',
