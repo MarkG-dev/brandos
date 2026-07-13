@@ -52,7 +52,12 @@
       <!-- SOURCE -->
       <div class="sc-card" style="gap: var(--space-4);">
         <div class="sc-eyebrow">Source</div>
+        <div>
+          <div class="sc-eyebrow" style="margin-bottom: 8px;">Mode</div>
+          <div class="sc-navrow" id="modes"></div>
+        </div>
         <div class="sc-field">
+          <label id="sourceLabel" class="sc-eyebrow" style="margin-bottom: 6px;">Source text</label>
           <textarea id="source" placeholder="Paste the text to rewrite — a headline, a paragraph, a raw idea."></textarea>
         </div>
         <div>
@@ -112,6 +117,26 @@
   const HIST_KEY = `brandos:copywriter:${slug}`;
   let activePreset = null;
   let activeWordCount = null;
+  let activeMode = 'rewrite';
+
+  const MODE_COPY = {
+    rewrite: {
+      label: 'Source text',
+      placeholder: 'Paste the text to rewrite — a headline, a paragraph, a raw idea.',
+      button: 'Rewrite →',
+    },
+    write: {
+      label: 'Brief',
+      placeholder: 'Describe what you need — "a LinkedIn post announcing the SLAM release", "three headline options for the collision-avoidance page".',
+      button: 'Write →',
+    },
+  };
+  function applyMode(m) {
+    activeMode = m;
+    document.getElementById('sourceLabel').textContent = MODE_COPY[m].label;
+    document.getElementById('source').placeholder = MODE_COPY[m].placeholder;
+    document.getElementById('go').textContent = MODE_COPY[m].button;
+  }
 
   (async () => {
     if (!slug) { location.href = '/login'; return; }
@@ -119,6 +144,21 @@
     if (!r.ok) { location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
     const me = await r.json();
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · COPYWRITER`;
+
+    // Write / Rewrite mode pills.
+    const mwrap = document.getElementById('modes');
+    [['rewrite', 'Rewrite'], ['write', 'Write']].forEach(([m, label], i) => {
+      const b = document.createElement('button');
+      b.className = 'sc-pill mono small';
+      b.textContent = label;
+      b.onclick = () => {
+        applyMode(m);
+        mwrap.querySelectorAll('.sc-pill').forEach(el => el.classList.remove('active'));
+        b.classList.add('active');
+      };
+      if (i === 0) b.click();
+      mwrap.appendChild(b);
+    });
 
     // Preset pills come from the brand config; fall back to the classic set.
     let presets = ['Tighten', 'Rewrite as tagline', 'Headline', 'Explain simply'];
@@ -170,7 +210,7 @@
     const status = document.getElementById('status');
     const out = document.getElementById('output');
     if (!source) { status.className = 'sc-status err'; status.textContent = 'Give it something to work with.'; return; }
-    status.className = 'sc-status'; status.textContent = 'Rewriting…';
+    status.className = 'sc-status'; status.textContent = activeMode === 'write' ? 'Writing…' : 'Rewriting…';
     out.textContent = '';
     document.getElementById('copy').disabled = true;
     document.getElementById('reroll').disabled = true;
@@ -178,7 +218,7 @@
       const r = await fetch('/api/brand-os/copywriter', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ slug, source, presetLabel: activePreset, wordCount: activeWordCount }),
+        body: JSON.stringify({ slug, source, presetLabel: activePreset, wordCount: activeWordCount, mode: activeMode }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Failed');
@@ -186,7 +226,7 @@
       status.className = 'sc-status ok'; status.textContent = 'Done.';
       document.getElementById('copy').disabled = false;
       document.getElementById('reroll').disabled = false;
-      pushHistory({ ts: Date.now(), source, preset: activePreset, wordCount: activeWordCount, output: j.output });
+      pushHistory({ ts: Date.now(), source, mode: activeMode, preset: activePreset, wordCount: activeWordCount, output: j.output });
     } catch (e) {
       status.className = 'sc-status err'; status.textContent = e.message;
       out.innerHTML = '<span class="sc-eyebrow">Waiting for input</span>';

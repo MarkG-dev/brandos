@@ -106,6 +106,7 @@
         <a class="sc-pill mono small" href="/admin">← All brands</a>
         <button class="sc-pill mono small active" data-tab="fields">Config</button>
         <button class="sc-pill mono small" data-tab="assets">Assets</button>
+        <button class="sc-pill mono small" data-tab="presets">Presets</button>
         <button class="sc-pill mono small" data-tab="prompts">Prompts</button>
         <button class="sc-pill mono small" data-tab="usage">Usage</button>
         <button class="sc-pill mono small" data-tab="zip">Upload zip</button>
@@ -171,6 +172,20 @@
       </div>
 
       <div class="sc-status" id="assetsStatus"></div>
+    </section>
+
+    <section id="tab-presets" style="display: none; flex-direction: column; gap: var(--space-5);">
+      <div class="sc-card">
+        <div class="sc-eyebrow">Copywriter presets · the Task pills clients see</div>
+        <div id="cwPresetList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        <div class="sc-row"><button class="sc-pill mono small" id="cwPresetAdd">＋ Add preset</button></div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-eyebrow">Art Director presets · the Shot pills clients see</div>
+        <div id="adPresetList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        <div class="sc-row"><button class="sc-pill mono small" id="adPresetAdd">＋ Add preset</button></div>
+      </div>
+      <div class="sc-eyebrow">Labels appear as pills in the workshops. Prompts and hints stay server-side — clients never see them. Save to apply.</div>
     </section>
 
     <section id="tab-usage" style="display: none; flex-direction: column; gap: var(--space-5);">
@@ -357,6 +372,7 @@
     try { return new Date(iso).toISOString().slice(0, 10); } catch { return '—'; }
   }
   function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s) { return escapeHtml(s); }
 
   /* -----------------------------------------------------------
      EDITOR VIEW
@@ -372,6 +388,21 @@
       // slug editable
       document.getElementById('slug').disabled = false;
       document.getElementById('passwordLabel').textContent = 'Client password';
+      renderPresetEditors({
+        copywriter: [
+          { label: 'Tighten', prompt: 'Cut every unnecessary word. Preserve meaning, sharpen tone.' },
+          { label: 'Tagline', prompt: 'One line, max 8 words, in brand voice.' },
+          { label: 'Headline', prompt: 'A display headline in the brand voice.' },
+          { label: 'Social post', prompt: 'A social post in the brand voice. First line is the hook. Short paragraphs. No hashtags, no emoji.' },
+          { label: 'Explain simply', prompt: 'Rewrite in plain language for someone unfamiliar with the category.' },
+        ],
+        artDirector: [
+          { label: 'Hero horizontal', aspect: '3:2', hint: 'wide landscape composition, low horizon, headroom for wordmark' },
+          { label: 'Product still', aspect: '1:1', hint: 'product-first, hairline shadow, orthogonal composition' },
+          { label: 'Social square', aspect: '1:1', hint: 'eye-level composition, headroom for wordmark, negative space bottom-left' },
+          { label: 'Story portrait', aspect: '9:16', hint: 'vertical, subject centred, minimal background clutter' },
+        ],
+      });
     } else {
       document.getElementById('editorMode').textContent = 'Editing';
       document.getElementById('editorTitle').textContent = `${editSlug}.`;
@@ -393,7 +424,7 @@
     document.querySelectorAll('[data-tab]').forEach(t => t.addEventListener('click', () => {
       document.querySelectorAll('[data-tab]').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      ['fields', 'assets', 'prompts', 'usage', 'zip'].forEach(name => {
+      ['fields', 'assets', 'presets', 'prompts', 'usage', 'zip'].forEach(name => {
         const el = document.getElementById('tab-' + name);
         if (!el) return;
         el.style.display = t.dataset.tab === name ? 'flex' : 'none';
@@ -452,11 +483,63 @@
     }
   }
 
+  // ---- Preset editors -------------------------------------------------
+  const AD_ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '16:9', '9:16', '2:1', '1:2', '4:5'];
+
+  function cwPresetRow(p = {}) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid; grid-template-columns: 180px 1fr auto; gap: 8px; align-items: start;';
+    row.dataset.presetRow = 'cw';
+    row.innerHTML = `
+      <input class="p-label" placeholder="Label" value="${escapeAttr(p.label || '')}" style="font-family: var(--font-mono);">
+      <textarea class="p-prompt" placeholder="Instruction sent to Claude" style="min-height: 54px;">${escapeHtml(p.prompt || '')}</textarea>
+      <button class="sc-pill mono small p-remove" title="Remove">×</button>`;
+    row.querySelector('.p-remove').addEventListener('click', () => row.remove());
+    return row;
+  }
+  function adPresetRow(p = {}) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid; grid-template-columns: 180px 90px 1fr auto; gap: 8px; align-items: start;';
+    row.dataset.presetRow = 'ad';
+    const opts = AD_ASPECTS.map(a => `<option value="${a}"${a === (p.aspect || '1:1') ? ' selected' : ''}>${a}</option>`).join('');
+    row.innerHTML = `
+      <input class="p-label" placeholder="Label" value="${escapeAttr(p.label || '')}" style="font-family: var(--font-mono);">
+      <select class="p-aspect">${opts}</select>
+      <textarea class="p-hint" placeholder="Composition hint merged into the prompt" style="min-height: 54px;">${escapeHtml(p.hint || '')}</textarea>
+      <button class="sc-pill mono small p-remove" title="Remove">×</button>`;
+    row.querySelector('.p-remove').addEventListener('click', () => row.remove());
+    return row;
+  }
+  function renderPresetEditors(presets) {
+    const cw = document.getElementById('cwPresetList');
+    const ad = document.getElementById('adPresetList');
+    cw.innerHTML = ''; ad.innerHTML = '';
+    (presets?.copywriter || []).forEach(p => cw.appendChild(cwPresetRow(p)));
+    (presets?.artDirector || []).forEach(p => ad.appendChild(adPresetRow(p)));
+  }
+  function readPresetEditors() {
+    const copywriter = [...document.querySelectorAll('#cwPresetList [data-preset-row]')].map(row => ({
+      label: row.querySelector('.p-label').value.trim(),
+      prompt: row.querySelector('.p-prompt').value.trim(),
+    })).filter(p => p.label && p.prompt);
+    const artDirector = [...document.querySelectorAll('#adPresetList [data-preset-row]')].map(row => ({
+      label: row.querySelector('.p-label').value.trim(),
+      aspect: row.querySelector('.p-aspect').value,
+      hint: row.querySelector('.p-hint').value.trim(),
+    })).filter(p => p.label);
+    return { copywriter, artDirector };
+  }
+  document.getElementById('cwPresetAdd').addEventListener('click', () =>
+    document.getElementById('cwPresetList').appendChild(cwPresetRow()));
+  document.getElementById('adPresetAdd').addEventListener('click', () =>
+    document.getElementById('adPresetList').appendChild(adPresetRow()));
+
   function fillForm(b) {
     document.getElementById('name').value = b.name || '';
     document.getElementById('slug').value = b.slug || '';
     const preview = document.getElementById('urlPreview');
     if (preview) preview.textContent = b.slug ? `${location.host}/${b.slug}` : '—';
+    renderPresetEditors(b.presets);
     // Assets — new simplified schema, with legacy fallbacks
     const legacyBrand = b.assets?.brandAssetsUrl || '';
     document.getElementById('asset_library').value = b.assets?.assetLibraryUrl || legacyBrand;
@@ -506,6 +589,7 @@
       name: document.getElementById('name').value.trim(),
       slug: document.getElementById('slug').value.trim(),
       password: document.getElementById('password').value,
+      presets: readPresetEditors(),
       assets: {
         assetLibraryUrl:  document.getElementById('asset_library').value.trim(),
         pdfGuidelines:    readPdfList(),

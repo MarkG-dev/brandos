@@ -23,8 +23,9 @@ export default async function handler(req, res) {
   const payload = await verify(readCookie(cookieHeader), secret);
   if (!payload) return res.status(401).json({ error: 'Not signed in' });
 
-  const { slug, task, source, presetLabel, wordCount } = req.body || {};
+  const { slug, task, source, presetLabel, wordCount, mode } = req.body || {};
   if (!slug || !source) return res.status(400).json({ error: 'slug and source required' });
+  const writeMode = mode === 'write'; // default is rewrite
   if (payload.role !== 'admin' && payload.slug !== slug) {
     return res.status(403).json({ error: 'Session does not match slug' });
   }
@@ -40,7 +41,8 @@ export default async function handler(req, res) {
   }
 
   const preset = (brand.presets?.copywriter || []).find(p => p.label === presetLabel);
-  let taskInstruction = preset?.prompt || task || 'Rewrite in brand voice.';
+  let taskInstruction = preset?.prompt || task
+    || (writeMode ? 'Write new copy in the brand voice.' : 'Rewrite in brand voice.');
 
   // Word-count constraint (15 / 50 / 100 boilerplates or arbitrary integer).
   const wc = parseInt(wordCount, 10);
@@ -48,7 +50,7 @@ export default async function handler(req, res) {
     taskInstruction += ` The result MUST be no more than ${wc} words. Count carefully. Prefer the exact target length, ±2 words.`;
   }
 
-  const system = buildSystemPrompt(brand, taskInstruction);
+  const system = buildSystemPrompt(brand, taskInstruction, writeMode);
   const model = brand.model?.copywriter || 'claude-opus-4-8';
 
   try {
@@ -95,6 +97,7 @@ export default async function handler(req, res) {
       await saveCopyOutput(slug, {
         source,
         text: output,
+        mode: writeMode ? 'write' : 'rewrite',
         preset: presetLabel || null,
         wordCount: Number.isFinite(wc) && wc >= 5 && wc <= 500 ? wc : null,
         model,
@@ -110,7 +113,7 @@ export default async function handler(req, res) {
   }
 }
 
-function buildSystemPrompt(brand, taskInstruction) {
+function buildSystemPrompt(brand, taskInstruction, writeMode = false) {
   const examples = (brand.voice?.examples || []).map(e => `- ${e}`).join('\n') || '(none provided)';
   const doNotUse = (brand.voice?.doNotUse || []).map(d => `- ${d}`).join('\n') || '(none)';
   const strategy = brand.strategy || {};
@@ -123,9 +126,14 @@ function buildSystemPrompt(brand, taskInstruction) {
     strategy.belief && `Core belief:\n${strategy.belief}`,
   ].filter(Boolean).join('\n\n');
 
+  const inputFraming = writeMode
+    ? 'The user message is a BRIEF describing what to write. Write new copy that fulfils it — do not restate or rewrite the brief itself.'
+    : 'The user message is DRAFT TEXT. Transform it per the task.';
+
   return `You are the ${brand.name} copywriter.
 
 Task: ${taskInstruction}
+${inputFraming}
 ${strategyBlock ? `\nStrategy — what the brand is:\n${strategyBlock}\n` : ''}
 Voice guidelines:
 ${brand.voice?.guidelines || '(unspecified — default to the brand tone examples below)'}
@@ -136,5 +144,5 @@ ${examples}
 Do NOT use:
 ${doNotUse}
 
-Return ONLY the rewritten text. No preface, no explanation, no quote marks around it.`;
+Return ONLY the ${writeMode ? 'copy' : 'rewritten text'}. No preface, no explanation, no quote marks around it.`;
 }

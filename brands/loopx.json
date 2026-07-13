@@ -76,41 +76,49 @@
     "copywriter": [
       {
         "label": "Tighten",
-        "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone."
+        "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone. No hedging."
       },
       {
-        "label": "Rewrite as tagline",
-        "prompt": "One line, max 8 words, in brand voice."
+        "label": "Tagline",
+        "prompt": "One line, max 8 words. UPPERCASE-worthy. Uncompromising."
       },
       {
         "label": "Headline",
-        "prompt": "A display headline in the brand voice. UPPERCASE if the brand direction calls for it."
+        "prompt": "A display headline in the brand voice. UPPERCASE. Declarative. Short."
+      },
+      {
+        "label": "Social post",
+        "prompt": "A LinkedIn post in the brand voice. First line is the hook. Short paragraphs, declarative. No hashtags, no emoji. 60-120 words unless a word count is set."
+      },
+      {
+        "label": "Email subject + preview",
+        "prompt": "An email subject line (max 7 words) and a preview line (max 12 words). Return exactly two lines:\nSubject: ...\nPreview: ...\nBrand voice. No clickbait."
       },
       {
         "label": "Explain simply",
-        "prompt": "Rewrite in plain language for someone unfamiliar with the category."
+        "prompt": "Rewrite in plain language for an operations lead unfamiliar with the technology. Still the brand voice - restrained, confident, no hype."
       }
     ],
     "artDirector": [
       {
         "label": "Hero horizontal",
         "aspect": "3:2",
-        "hint": "wide landscape composition, low horizon, headroom for wordmark"
+        "hint": "wide landscape composition, low horizon, negative space for wordmark bottom-left"
       },
       {
         "label": "Product still",
         "aspect": "1:1",
-        "hint": "product-first, off-white surface, hairline shadow"
+        "hint": "product-first, sensor or module on black surface, hairline reflection, orthogonal composition"
       },
       {
         "label": "Social square",
         "aspect": "1:1",
-        "hint": "eye-level composition, headroom for wordmark, negative space bottom-left"
+        "hint": "eye-level composition, headroom for wordmark, high-contrast, minimal background"
       },
       {
         "label": "Story portrait",
         "aspect": "9:16",
-        "hint": "vertical, subject centred, minimal background clutter"
+        "hint": "vertical hero, subject centred low, tall negative space above for headline"
       }
     ]
   },
