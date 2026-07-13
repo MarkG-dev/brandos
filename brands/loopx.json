@@ -1,8 +1,8 @@
 {
   "name": "Loop X",
   "slug": "loopx",
-  "passwordHash": "$2a$10$RE3aNbxanbcHxdHoTvhs/O76DbwsDW3m4Esak91.XVEkdiqH9hQky",
-  "createdAt": "2026-07-09T19:17:14.433Z",
+  "passwordHash": "$2a$10$BDqZ/RTEk7oqldG9i3fORe2PYMawkfvS.oUB0qipYj1oh8Vsur2h6",
+  "createdAt": "2026-07-13T18:43:14.206Z",
   "strategy": {
     "positioning": "Loop X builds machine intelligence for the most uncontrolled environments — mining, underground, dust, glare, total dark. Thermal perception that works with no tag, no map, and no light required. Where GPS fails, LiDAR blinds out, and cameras go dark, Loop X sees.",
     "audience": "Mine operators, autonomy engineers, and heavy-industry ops leads responsible for machine safety, uptime, and productivity in visibility-hostile environments. An operations lead should understand the value on the first scroll.",
@@ -76,49 +76,41 @@
     "copywriter": [
       {
         "label": "Tighten",
-        "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone. No hedging."
+        "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone."
       },
       {
-        "label": "Tagline",
-        "prompt": "One line, max 8 words. UPPERCASE-worthy. Uncompromising."
+        "label": "Rewrite as tagline",
+        "prompt": "One line, max 8 words, in brand voice."
       },
       {
         "label": "Headline",
-        "prompt": "A display headline in the brand voice. UPPERCASE. Declarative. Short."
-      },
-      {
-        "label": "Social post",
-        "prompt": "A LinkedIn post in the brand voice. First line is the hook. Short paragraphs, declarative. No hashtags, no emoji. 60-120 words unless a word count is set."
-      },
-      {
-        "label": "Email subject + preview",
-        "prompt": "An email subject line (max 7 words) and a preview line (max 12 words). Return exactly two lines:\nSubject: ...\nPreview: ...\nBrand voice. No clickbait."
+        "prompt": "A display headline in the brand voice. UPPERCASE if the brand direction calls for it."
       },
       {
         "label": "Explain simply",
-        "prompt": "Rewrite in plain language for an operations lead unfamiliar with the technology. Still the brand voice - restrained, confident, no hype."
+        "prompt": "Rewrite in plain language for someone unfamiliar with the category."
       }
     ],
     "artDirector": [
       {
         "label": "Hero horizontal",
         "aspect": "3:2",
-        "hint": "wide landscape composition, low horizon, negative space for wordmark bottom-left"
+        "hint": "wide landscape composition, low horizon, headroom for wordmark"
       },
       {
         "label": "Product still",
         "aspect": "1:1",
-        "hint": "product-first, sensor or module on black surface, hairline reflection, orthogonal composition"
+        "hint": "product-first, off-white surface, hairline shadow"
       },
       {
         "label": "Social square",
         "aspect": "1:1",
-        "hint": "eye-level composition, headroom for wordmark, high-contrast, minimal background"
+        "hint": "eye-level composition, headroom for wordmark, negative space bottom-left"
       },
       {
         "label": "Story portrait",
         "aspect": "9:16",
-        "hint": "vertical hero, subject centred low, tall negative space above for headline"
+        "hint": "vertical, subject centred, minimal background clutter"
       }
     ]
   },
@@ -134,6 +126,6 @@
         "url": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/pdf/loopx/LoopX___Guidelines-WVs1DCUK5dAG1sqTLqFdSdCCrm4Ppu.pdf"
       }
     ],
-    "guidelinesZipUrl": ""
+    "guidelinesZipUrl": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/loopx/Loop_X_Design_System-bsutd6U43iDK7Ipfk0jsZIG0Stol15.zip"
   }
 }
