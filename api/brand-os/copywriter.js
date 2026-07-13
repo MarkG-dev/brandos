@@ -11,6 +11,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { verify, readCookie } from '../../lib/brand-os-auth.js';
 import { logEvent, computeCopywriterCost } from '../../lib/brand-os-usage.js';
+import { saveCopyOutput } from '../../lib/brand-os-outputs.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -87,6 +88,21 @@ export default async function handler(req, res) {
       outputTokens,
       costUsd,
     }).catch(e => console.error('usage log failed:', e.message));
+
+    // Persist to the brand's output library. Await so the write survives
+    // the function teardown — it's one small JSON put.
+    try {
+      await saveCopyOutput(slug, {
+        source,
+        text: output,
+        preset: presetLabel || null,
+        wordCount: Number.isFinite(wc) && wc >= 5 && wc <= 500 ? wc : null,
+        model,
+        author: payload.slug === '__admin__' ? 'admin' : payload.slug,
+      });
+    } catch (e) {
+      console.error('output save failed:', e.message);
+    }
 
     return res.status(200).json({ output, usage: { inputTokens, outputTokens, costUsd } });
   } catch (e) {

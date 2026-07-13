@@ -60,5 +60,11 @@ export default async function handler(req, res) {
     },
     palette: brand.art?.palette || [],
     assets: brand.assets || {},
+    // Preset labels drive the workshop pills. Prompts/hints stay
+    // server-side — the agent APIs look content up by label.
+    presets: {
+      copywriter: (brand.presets?.copywriter || []).map(p => ({ label: p.label })),
+      artDirector: (brand.presets?.artDirector || []).map(p => ({ label: p.label, aspect: p.aspect })),
+    },
   });
 }

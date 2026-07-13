@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library · Brand OS</title>
+<link rel="stylesheet" href="/brand-os/style.css">
+<style>
+  .lib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-4);
+  }
+  .lib-card {
+    border: 1px solid var(--sc-hairline);
+    border-radius: var(--radius-md);
+    background: var(--sc-void);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .lib-card:hover { border-color: var(--sc-hairline-strong); }
+  .lib-card .img-wrap {
+    aspect-ratio: 1; overflow: hidden;
+    background: rgba(255,255,255,0.02);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lib-card .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .lib-card .copy-text {
+    padding: var(--space-4);
+    font-family: var(--font-display); font-size: 14px; line-height: 1.5;
+    color: var(--sc-ink);
+    flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: pre-wrap;
+  }
+  .lib-card .meta {
+    padding: 10px var(--space-4);
+    border-top: 1px solid var(--sc-hairline);
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--sc-mist);
+  }
+  .lib-card .meta .actions { display: flex; gap: 6px; }
+  .lib-card .meta a, .lib-card .meta button {
+    background: transparent; border: 1px solid var(--sc-hairline-strong);
+    color: var(--sc-mist); cursor: pointer;
+    padding: 4px 10px; border-radius: var(--radius-pill);
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .lib-card .meta a:hover, .lib-card .meta button:hover { color: var(--sc-ink); border-color: var(--sc-ink); opacity: 1; }
+  .lib-empty {
+    padding: var(--space-7);
+    text-align: center;
+    color: var(--sc-mist);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: 1px dashed var(--sc-hairline-strong);
+    border-radius: var(--radius-md);
+  }
+</style>
+</head>
+<body>
+<div class="sc-page">
+  <header class="sc-topbar">
+    <div class="left"><span class="sc-wordmark">Spacecadet Studio<span class="plus">+</span></span></div>
+    <div class="center" id="brandTag">— · library</div>
+    <div class="right sc-meta-lines">NYC, Planet Earth
+<span class="sc-clock">00:00:00</span></div>
+  </header>
+
+  <main style="align-self: center; max-width: 1300px; width: 100%; display: flex; flex-direction: column; gap: var(--space-6);">
+    <div class="sc-row" style="justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-3);">
+      <div>
+        <div class="sc-tag"><span class="num">03</span> Everything you've made</div>
+        <h1 class="sc-h1" style="margin-top: 6px;">Library</h1>
+      </div>
+      <div class="sc-navrow" id="filters">
+        <button class="sc-pill mono small active" data-filter="all">All</button>
+        <button class="sc-pill mono small" data-filter="image">Images</button>
+        <button class="sc-pill mono small" data-filter="copy">Copy</button>
+      </div>
+    </div>
+
+    <div class="lib-grid" id="grid"></div>
+    <div class="lib-empty" id="empty" style="display:none;">Nothing here yet — outputs from the Copywriter and Art Director land here automatically.</div>
+    <div class="sc-status" id="status">Loading…</div>
+  </main>
+
+  <footer class="sc-botbar">
+    <div class="left"><a href="#" id="backLink" class="sc-pill small mono">← Hub</a></div>
+    <div class="center"></div>
+    <div class="right"><a href="#" id="logout" class="sc-pill small mono">Sign out</a></div>
+  </footer>
+</div>
+
+<script src="/brand-os/starfield.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const pathSlug = (location.pathname.match(/^\/([a-z][a-z0-9-]{1,40})\/library\/?$/) || [])[1];
+  const slug = params.get('slug') || pathSlug;
+  if (!slug) location.href = '/login';
+  document.getElementById('backLink').href = `/${encodeURIComponent(slug || '')}`;
+
+  let allOutputs = [];
+  let activeFilter = 'all';
+
+  (async () => {
+    const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
+    if (!r.ok) { location.href = `/login?next=${encodeURIComponent(location.pathname)}`; return; }
+    const me = await r.json();
+    document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · LIBRARY`;
+    await load();
+  })();
+
+  async function load() {
+    const status = document.getElementById('status');
+    try {
+      const r = await fetch(`/api/brand-os/outputs?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Load failed');
+      allOutputs = j.outputs || [];
+      status.textContent = '';
+      render();
+    } catch (e) {
+      status.className = 'sc-status err';
+      status.textContent = e.message;
+    }
+  }
+
+  document.querySelectorAll('#filters .sc-pill').forEach(b => {
+    b.addEventListener('click', () => {
+      activeFilter = b.dataset.filter;
+      document.querySelectorAll('#filters .sc-pill').forEach(el => el.classList.remove('active'));
+      b.classList.add('active');
+      render();
+    });
+  });
+
+  function render() {
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const items = allOutputs.filter(o => activeFilter === 'all' || o.type === activeFilter);
+    grid.innerHTML = '';
+    empty.style.display = items.length ? 'none' : '';
+
+    for (const o of items) {
+      const card = document.createElement('div');
+      card.className = 'lib-card';
+      const when = fmtDate(o.ts);
+      const tag = [o.preset, when].filter(Boolean).join(' · ');
+
+      if (o.type === 'image' && o.imageUrl) {
+        card.innerHTML = `
+          <div class="img-wrap"><img loading="lazy" src="${escapeAttr(o.imageUrl)}" alt=""></div>
+          <div class="meta">
+            <span title="${escapeAttr(o.prompt || '')}">${escapeHtml(tag)}</span>
+            <span class="actions"><a href="${escapeAttr(o.imageUrl)}" download target="_blank" rel="noreferrer">↓</a></span>
+          </div>`;
+      } else if (o.type === 'copy') {
+        card.innerHTML = `
+          <div class="copy-text">${escapeHtml(o.text || '')}</div>
+          <div class="meta">
+            <span>${escapeHtml(tag)}</span>
+            <span class="actions"><button data-copy>Copy</button></span>
+          </div>`;
+        card.querySelector('[data-copy]').addEventListener('click', (e) => {
+          navigator.clipboard.writeText(o.text || '');
+          e.target.textContent = 'Copied';
+          setTimeout(() => { e.target.textContent = 'Copy'; }, 1200);
+        });
+      } else {
+        continue;
+      }
+      grid.appendChild(card);
+    }
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+  }
+  function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  document.getElementById('logout').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await fetch('/api/brand-os/session', { method: 'DELETE', credentials: 'same-origin' });
+    location.href = '/';
+  });
+</script>
+</body>
+</html>

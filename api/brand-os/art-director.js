@@ -17,6 +17,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { verify, readCookie } from '../../lib/brand-os-auth.js';
 import { logEvent, estimateArtDirectorCost } from '../../lib/brand-os-usage.js';
+import { saveImageOutput } from '../../lib/brand-os-outputs.js';
 
 export const config = { maxDuration: 60 };
 
@@ -24,15 +25,21 @@ const MAG_BASE = 'https://api.magnific.com/v1';
 const POLL_INTERVAL_MS = 3000;
 const POLL_TIMEOUT_MS = 55000;
 
-// Loose CSS-aspect-to-Magnific aspect-ratio mapping.
+// CSS-aspect-to-Magnific enum. Valid Mystic values (per Freepik API docs):
+// square_1_1, classic_4_3, traditional_3_4, widescreen_16_9,
+// social_story_9_16, portrait_2_3, standard_3_2, horizontal_2_1,
+// vertical_1_2, social_post_4_5.
 const ASPECT_MAP = {
   '1:1':  'square_1_1',
-  '3:2':  'traditional_3_2',
+  '3:2':  'standard_3_2',
   '2:3':  'portrait_2_3',
-  '4:3':  'traditional_4_3',
+  '4:3':  'classic_4_3',
   '3:4':  'traditional_3_4',
   '16:9': 'widescreen_16_9',
   '9:16': 'social_story_9_16',
+  '2:1':  'horizontal_2_1',
+  '1:2':  'vertical_1_2',
+  '4:5':  'social_post_4_5',
 };
 
 export default async function handler(req, res) {
@@ -97,8 +104,13 @@ export default async function handler(req, res) {
     });
     const submitData = await submitRes.json().catch(() => ({}));
     if (!submitRes.ok) {
+      // Surface validation detail (e.g. bad aspect_ratio enum) so the
+      // client sees WHY, not just "failed".
+      const detail = [submitData.message, submitData.error]
+        .concat((submitData.invalid_params || []).map(p => `${p.name}: ${p.reason || ''}`))
+        .filter(Boolean).join(' — ');
       return res.status(submitRes.status).json({
-        error: submitData.message || submitData.error || `Magnific submit failed (${submitRes.status})`,
+        error: detail || `Magnific submit failed (${submitRes.status})`,
         raw: submitData,
       });
     }
@@ -123,7 +135,7 @@ export default async function handler(req, res) {
       const state = (inner.status || '').toUpperCase();
       if (state === 'COMPLETED' || state === 'SUCCESS' || state === 'DONE') {
         const generated = inner.generated || inner.output || [];
-        const imageUrl = Array.isArray(generated) ? generated[0] : generated;
+        const magnificUrl = Array.isArray(generated) ? generated[0] : generated;
 
         const costUsd = estimateArtDirectorCost(model);
         logEvent(slug, {
@@ -135,10 +147,32 @@ export default async function handler(req, res) {
           costUsd,
         }).catch(e => console.error('usage log failed:', e.message));
 
+        // Persist to the brand's output library. Re-host the bytes into
+        // Blob only if we still have headroom inside maxDuration.
+        const elapsed = Date.now() - start;
+        let record = null;
+        try {
+          record = await saveImageOutput(slug, {
+            prompt,
+            preset: presetLabel || null,
+            model,
+            aspect: preset.aspect || '1:1',
+            author: payload.slug === '__admin__' ? 'admin' : payload.slug,
+            sourceUrl: magnificUrl,
+          }, { rehost: elapsed < 40000 });
+        } catch (e) {
+          console.error('output save failed:', e.message);
+        }
+
+        const imageUrl = record?.imageUrl || magnificUrl;
         return res.status(200).json({ imageUrl, taskId, usage: { costUsd } });
       }
       if (state === 'FAILED' || state === 'ERROR') {
-        return res.status(500).json({ error: 'Magnific job failed', raw: inner });
+        const reason = inner.error || inner.message || inner.reason || '';
+        return res.status(500).json({
+          error: `Magnific job failed${reason ? `: ${reason}` : ''}`,
+          raw: inner,
+        });
       }
     }
 

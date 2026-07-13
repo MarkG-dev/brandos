@@ -109,10 +109,10 @@
   .agents-row {
     flex: 1; min-height: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-4);
   }
-  @media (max-width: 720px) { .agents-row { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .agents-row { grid-template-columns: 1fr; } }
   .agents-row .sc-card {
     height: 100%;
     aspect-ratio: auto;
@@ -163,6 +163,14 @@
           <span class="sc-eyebrow">→</span>
         </div>
       </a>
+      <a class="sc-card hover-lift" id="libLink" href="#">
+        <div class="sc-tag"><span class="num">03</span> Everything you've made</div>
+        <h2 class="sc-h1" style="margin-top: auto;">Library</h2>
+        <div class="sc-row" style="justify-content: space-between; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
+          <span class="sc-eyebrow">Browse outputs</span>
+          <span class="sc-eyebrow">→</span>
+        </div>
+      </a>
     </div>
   </main>
 
@@ -182,6 +190,7 @@
 
   document.getElementById('copyLink').href = `/${encodeURIComponent(slug)}/copywriter`;
   document.getElementById('artLink').href  = `/${encodeURIComponent(slug)}/art-director`;
+  document.getElementById('libLink').href  = `/${encodeURIComponent(slug)}/library`;
 
   loadHub();
 

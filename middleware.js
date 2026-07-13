@@ -25,6 +25,7 @@ export const config = {
     '/api/brand-os/blob-token',
     '/api/brand-os/usage',
     '/api/brand-os/github-check',
+    '/api/brand-os/outputs',
     // Catch-all for slug routes; excludes reserved directories and any file with a dot.
     '/((?!brand-os|api|_next|_vercel|.*\\..*).*)',
   ],
@@ -33,7 +34,7 @@ export const config = {
 // Single-segment reserved words — never treated as a brand slug.
 const RESERVED = new Set(['login', 'admin', 'favicon.ico', '']);
 
-const SLUG_RE = /^\/([a-z][a-z0-9-]{1,40})(?:\/(copywriter|art-director))?\/?$/;
+const SLUG_RE = /^\/([a-z][a-z0-9-]{1,40})(?:\/(copywriter|art-director|library))?\/?$/;
 
 export default async function middleware(req) {
   const url = new URL(req.url);
@@ -89,6 +90,9 @@ export default async function middleware(req) {
     }
     if (sub === 'art-director') {
       return rewriteWith(`/brand-os/art-director.html`, { slug }, req.url);
+    }
+    if (sub === 'library') {
+      return rewriteWith(`/brand-os/library.html`, { slug }, req.url);
     }
     return rewriteWith(`/brand-os/hub.html`, { slug }, req.url);
   }

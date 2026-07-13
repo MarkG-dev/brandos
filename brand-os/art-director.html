@@ -168,7 +168,14 @@
     const me = await r.json();
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · ART DIRECTOR`;
 
-    const presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
+    // Preset pills come from the brand config; fall back to the classic set.
+    let presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
+    try {
+      const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const hub = await hubRes.json();
+      const fromBrand = (hub.presets?.artDirector || []).map(p => p.label).filter(Boolean);
+      if (fromBrand.length) presets = fromBrand;
+    } catch {}
     const pwrap = document.getElementById('presets');
     presets.forEach((p, i) => {
       const b = document.createElement('button');
