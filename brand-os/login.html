@@ -53,7 +53,11 @@
 <script>
   const params = new URLSearchParams(location.search);
   const isAdmin = params.get('admin') === '1';
-  const pathSlug = (location.pathname.match(/^\/([a-z][a-z0-9-]{1,40})\/?$/) || [])[1];
+  // /<slug> brand URLs land here via middleware rewrite — but reserved paths
+  // like /login and /admin are NOT brand slugs.
+  const RESERVED_PATHS = ['login', 'admin', 'brand-os'];
+  let pathSlug = (location.pathname.match(/^\/([a-z][a-z0-9-]{1,40})\/?$/) || [])[1];
+  if (RESERVED_PATHS.includes(pathSlug)) pathSlug = '';
   const presetSlug = params.get('slug') || pathSlug || '';
   const brandName = params.get('brand') || '';
   const next = params.get('next') || '';
