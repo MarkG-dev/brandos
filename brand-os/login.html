@@ -23,8 +23,8 @@
 
     <form id="loginForm" class="sc-card" style="gap: var(--space-4);">
       <div class="sc-field mono">
-        <label for="f1" id="l1">Brand slug</label>
-        <input type="text" id="f1" name="slug" placeholder="acme" autocomplete="username" required>
+        <label for="f1" id="l1">Brand</label>
+        <input type="text" id="f1" name="slug" placeholder="Your company name — e.g. Loop X" autocomplete="organization" required>
       </div>
       <div class="sc-field mono" id="emailField" style="display:none;">
         <label for="femail">Email</label>
@@ -99,6 +99,9 @@
       displayName = displayName || presetSlug;
       label.textContent = `${displayName} · Brand OS`;
     })();
+  } else {
+    // Generic client login: brand name + password (+ optional email for named users).
+    document.getElementById('emailField').style.display = '';
   }
 
   document.getElementById('loginForm').addEventListener('submit', async (e) => {

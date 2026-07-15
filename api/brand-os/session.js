@@ -6,6 +6,10 @@
 //     Body C (admin):                         { username, password }
 //     → sets brand_os_session cookie, returns { slug, role, name?, user? }
 //
+//     `slug` accepts either the real slug OR the brand's display name —
+//     "Loop X", "loop-x", and "loopx" all resolve to the same brand, so
+//     clients can type their company name at the generic /login.
+//
 //   GET    /api/brand-os/session  (also served as /session/me for clarity)
 //     → { slug, role, name?, user? } if signed in, 401 otherwise
 //
@@ -16,6 +20,8 @@
 // just-added user can sign in before the next deploy lands.
 
 import bcrypt from 'bcryptjs';
+import { readdir, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { readBrand } from '../../lib/brand-os-github.js';
 import {
   sign,
@@ -76,16 +82,16 @@ export default async function handler(req, res) {
     }
 
     // Brand client login path.
-    const { slug, password, email } = body;
-    if (!slug || !password) return res.status(400).json({ error: 'slug and password required' });
+    const { slug: brandInput, password, email } = body;
+    if (!brandInput || !password) return res.status(400).json({ error: 'brand and password required' });
 
-    const found = await readBrand(slug);
-    if (!found) {
+    const resolved = await resolveBrand(brandInput);
+    if (!resolved) {
       // Constant-time-ish rejection: still hash to avoid timing leaks.
       await bcrypt.compare(password, '$2a$10$abcdefghijklmnopqrstuvwxyzabcdefghij0123456789');
       return res.status(401).json({ error: 'Invalid brand or password' });
     }
-    const brand = found.config;
+    const { slug, config: brand } = resolved;
 
     let user = null;
     if (email && email.trim()) {
@@ -117,3 +123,35 @@ export default async function handler(req, res) {
 }
 
 function nowSecs() { return Math.floor(Date.now() / 1000); }
+
+// Resolve whatever the client typed — "Loop X", "loop-x", "loopx" — to a
+// brand. Tries slug candidates first, then scans configs by display name.
+async function resolveBrand(input) {
+  const raw = String(input).trim();
+  const candidates = [...new Set([
+    raw.toLowerCase(),
+    raw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), // kebab
+    raw.toLowerCase().replace(/[^a-z0-9]+/g, ''),                        // squashed
+  ])];
+  for (const c of candidates) {
+    if (!/^[a-z][a-z0-9-]{1,40}$/.test(c)) continue;
+    const found = await readBrand(c);
+    if (found) return { slug: c, config: found.config };
+  }
+  // Display-name match against the deployed configs.
+  try {
+    const dir = join(process.cwd(), 'brands');
+    for (const f of await readdir(dir)) {
+      if (!f.endsWith('.json')) continue;
+      try {
+        const j = JSON.parse(await readFile(join(dir, f), 'utf8'));
+        if ((j.name || '').trim().toLowerCase() === raw.toLowerCase()) {
+          const slug = j.slug || f.replace(/\.json$/, '');
+          const fresh = await readBrand(slug); // GitHub-first for current users/hashes
+          return { slug, config: fresh?.config || j };
+        }
+      } catch { /* skip malformed */ }
+    }
+  } catch { /* no brands dir */ }
+  return null;
+}
