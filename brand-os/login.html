@@ -26,10 +26,6 @@
         <label for="f1" id="l1">Brand</label>
         <input type="text" id="f1" name="slug" placeholder="Your company name — e.g. Loop X" autocomplete="organization" required>
       </div>
-      <div class="sc-field mono" id="emailField" style="display:none;">
-        <label for="femail">Email</label>
-        <input type="email" id="femail" name="email" placeholder="you@company.com — or leave blank for team password" autocomplete="email">
-      </div>
       <div class="sc-field mono">
         <label for="f2">Password</label>
         <input type="password" id="f2" name="password" autocomplete="current-password" required>
@@ -79,7 +75,6 @@
     // Client-shareable link: pre-fill the slug, hide the field, and treat as a single-password prompt.
     f1.value = presetSlug;
     f1.parentElement.style.display = 'none';
-    document.getElementById('emailField').style.display = '';
     label.textContent = 'Brand OS';
     title.textContent = 'Enter to continue.';
     modeSwitch.style.display = 'none';
@@ -103,9 +98,6 @@
       displayName = displayName || presetSlug;
       label.textContent = `${displayName} · Brand OS`;
     })();
-  } else {
-    // Generic client login: brand name + password (+ optional email for named users).
-    document.getElementById('emailField').style.display = '';
   }
 
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
