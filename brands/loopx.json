@@ -120,13 +120,8 @@
     "artDirector": "realism"
   },
   "assets": {
-    "assetLibraryUrl": "https://www.figma.com/deck/2JfaB9XTtxUbnMwI4oehdu/Brand-Guidelines?node-id=4-45&t=lOO8nq8jeJRBr9X4-1",
-    "pdfGuidelines": [
-      {
-        "name": "Brand Guidelines.pdf",
-        "url": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/pdf/loopx/Brand_Guidelines-f0pvHnrPKT8e92ORVXxw9hDDZVg3Cy.pdf"
-      }
-    ],
-    "guidelinesZipUrl": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/loopx/Loop_X_Design_System-bsutd6U43iDK7Ipfk0jsZIG0Stol15.zip"
+    "assetLibraryUrl": "https://www.figma.com/design/XKLgLhjr9zdVxXIahqc9c9/LoopX---Guidelines?node-id=0-1&t=KEnl6siSiL4g1hX1-1",
+    "pdfGuidelines": [],
+    "guidelinesZipUrl": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/loopx/_V1__Loop_X_Design_System-3lYWoH0PS37kvCSZqY32i0SggsPLz3.zip"
   }
 }
