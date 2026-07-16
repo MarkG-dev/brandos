@@ -27,13 +27,40 @@ configures, clients consume. Target price point $500–2000/mo per brand.
 
 ## Next up (in order)
 
-### 1. HTML asset generation ("Design" agent — 4th tile)
-- Landing pages, one-page proposals, social carousel HTML, email templates,
-  deck slides — rendered against the brand's design system
-- Primed by the Agent Guidelines ZIP (design-system format)
-- Outputs land in the Library like everything else
-- NOTE: serverless functions at 12/12 (Vercel Hobby cap) — retire
-  github-check.js or consolidate an endpoint before adding the next function
+### 1. Designer agent — 4th tile (tile shipped as "Coming soon")
+The hub tile is already live, grayed out. Build order below.
+
+**Approach: generate our own, don't API into Claude Design.** Claude generates
+HTML/SVG against the brand's design system; we render it server-side with the
+pre-installed headless Chromium; the client downloads in a chosen format. Same
+shape as Copywriter (Claude→text) and Art Director (Magnific→image). Keeps the
+brand lock and Library persistence — an external Design API would break both.
+
+**Fed by (most-specific first):** the Agent Guidelines ZIP (already shipped in
+the hub — this is its payoff: tokens/colors.css, spacing, type, voice) → brand
+config (palette, voice, logo.svg, strategy) → PDF guidelines (reference only).
+
+**Killer feature — pick your file format.** One HTML/SVG generation exports to
+several formats via headless Chromium (HTML→PNG/JPG at any dimension) and
+SVG→PNG:
+  - Social assets / banners (LinkedIn 1200×627, Twitter 1600×900, IG 1080×1080)
+    → PNG/JPG. *Build this first — cleanest fit, highest value.*
+  - Icons (SVG → svg/png) — overlaps the Art Director line-drawing mode; prototype.
+  - LinkedIn post content — arguably already a Copywriter preset; Designer could
+    compose copy + a generated banner into one download.
+  - Full layouts (one-pagers, decks) — highest complexity, defer.
+Ship as format-preset pills (locked dimensions + tuned prompt), like the
+shot/task presets. Outputs land in the Library with a format picker on download.
+
+**Serverless-slot plan (blocks the build).** At 12/12 on Vercel Hobby, a
+Designer render endpoint needs a slot first:
+  1. Retire `github-check.js` (admin diagnostic) — fold into save-brand as a
+     `?check=1` mode, or drop it. Frees 1 slot → Designer fits, no plan change.
+     *This is the unblock step.*
+  2. Alt: merge `outputs.js` + `usage.js` into one `library.js` (`?view=`).
+  3. Budget Vercel Pro (~$20/mo) for when render volume is real — Pro raises the
+     maxDuration ceiling, which the HTML→PNG render step wants (Art Director
+     already rides at maxDuration 60). Noise at $500–2k/mo per brand.
 
 ### 2. Brand chatbot ("Ask" agent)
 - "What's our tagline?", "Can I say X?", "What's our position on Y?"
