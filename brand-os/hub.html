@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Brand OS</title>
+<link rel="icon" type="image/svg+xml" href="/brand-os/symbol.svg">
 <link rel="stylesheet" href="/brand-os/style.css">
 <style>
   html, body { height: 100%; overflow: hidden; }
@@ -109,15 +110,35 @@
   .agents-row {
     flex: 1; min-height: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 1fr;
     gap: var(--space-4);
   }
-  @media (max-width: 900px) { .agents-row { grid-template-columns: 1fr; } }
   .agents-row .sc-card {
     height: 100%;
     aspect-ratio: auto;
     display: flex; flex-direction: column;
     padding: var(--space-6);
+  }
+  /* Coming-soon tile — visible but inert. */
+  .agents-row .sc-card.is-soon {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-style: dashed;
+  }
+  .agents-row .sc-card.is-soon:hover {
+    border-color: var(--sc-hairline);
+    background: var(--sc-panel);
+    opacity: 0.4;
+  }
+  .agents-row .sc-card.is-soon .sc-h1 { color: var(--sc-mist); }
+
+  /* Narrow screens: let the page scroll instead of clipping the 2×2. */
+  @media (max-width: 720px) {
+    html, body { height: auto; overflow: auto; }
+    .sc-page { height: auto; min-height: 100vh; }
+    .agents-row { grid-template-columns: 1fr; grid-auto-rows: auto; }
+    .agents-row .sc-card { min-height: 180px; }
   }
 </style>
 </head>
@@ -148,29 +169,33 @@
 
     <div class="agents-row">
       <a class="sc-card hover-lift" id="copyLink" href="#">
-        <div class="sc-tag"><span class="num">01</span> Locked to your voice</div>
+        <div class="sc-tag">Write / Rewrite</div>
         <h2 class="sc-h1" style="margin-top: auto;">Copywriter</h2>
-        <div class="sc-row" style="justify-content: space-between; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
-          <span class="sc-eyebrow">Write / rewrite</span>
+        <div class="sc-row" style="justify-content: flex-end; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
           <span class="sc-eyebrow">→</span>
         </div>
       </a>
       <a class="sc-card hover-lift" id="artLink" href="#">
-        <div class="sc-tag"><span class="num">02</span> Locked to your look</div>
+        <div class="sc-tag">Generate imagery</div>
         <h2 class="sc-h1" style="margin-top: auto;">Art Director</h2>
-        <div class="sc-row" style="justify-content: space-between; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
-          <span class="sc-eyebrow">Generate hero shot</span>
+        <div class="sc-row" style="justify-content: flex-end; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
           <span class="sc-eyebrow">→</span>
         </div>
       </a>
       <a class="sc-card hover-lift" id="libLink" href="#">
-        <div class="sc-tag"><span class="num">03</span> Everything you've made</div>
+        <div class="sc-tag">Browse outputs</div>
         <h2 class="sc-h1" style="margin-top: auto;">Library</h2>
-        <div class="sc-row" style="justify-content: space-between; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
-          <span class="sc-eyebrow">Browse outputs</span>
+        <div class="sc-row" style="justify-content: flex-end; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
           <span class="sc-eyebrow">→</span>
         </div>
       </a>
+      <div class="sc-card is-soon" id="designerCard" aria-disabled="true">
+        <div class="sc-tag">Coming soon</div>
+        <h2 class="sc-h1" style="margin-top: auto;">Designer</h2>
+        <div class="sc-row" style="justify-content: flex-end; border-top: 1px solid var(--sc-hairline); padding-top: var(--space-3);">
+          <span class="sc-eyebrow">Soon</span>
+        </div>
+      </div>
     </div>
   </main>
 
