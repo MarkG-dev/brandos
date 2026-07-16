@@ -74,12 +74,16 @@
     <div style="display: grid; grid-template-columns: 1fr 1.15fr 0.85fr; gap: var(--space-5);">
       <!-- PROMPT -->
       <div class="sc-card" style="gap: var(--space-4);">
-        <div class="sc-eyebrow">Prompt</div>
+        <div>
+          <div class="sc-eyebrow" style="margin-bottom: 8px;">Style</div>
+          <div class="sc-navrow" id="styles"></div>
+        </div>
+        <div class="sc-eyebrow" id="promptEyebrow">Prompt</div>
         <div class="sc-field">
           <textarea id="prompt" style="min-height: 140px;" placeholder="Describe the shot. Palette, framing, and grade come from your art direction — you don't need to specify them."></textarea>
         </div>
         <div>
-          <div class="sc-eyebrow" style="margin-bottom: 8px;">Shot preset</div>
+          <div class="sc-eyebrow" style="margin-bottom: 8px;" id="presetLabel">Shot preset</div>
           <div class="sc-navrow" id="presets"></div>
         </div>
 
@@ -159,7 +163,25 @@
   const HIST_KEY = `brandos:art-director:${slug}`;
   let activePreset = null;
   let activeModel = null;
+  let activeRenderStyle = 'photo';
   let lastImageUrl = null;
+
+  // Copy that swaps when you flip between photographic and line-drawing.
+  const STYLE_COPY = {
+    photo: {
+      promptPlaceholder: "Describe the shot. Palette, framing, and grade come from your art direction — you don't need to specify them.",
+      presetLabel: 'Shot preset',
+    },
+    line: {
+      promptPlaceholder: 'Name the subject to draw — "a haul truck", "a LiDAR sensor housing", "a conveyor system". Renders as clean white linework on black; palette and grade don’t apply.',
+      presetLabel: 'Aspect preset',
+    },
+  };
+  function applyRenderStyle(s) {
+    activeRenderStyle = s;
+    document.getElementById('prompt').placeholder = STYLE_COPY[s].promptPlaceholder;
+    document.getElementById('presetLabel').textContent = STYLE_COPY[s].presetLabel;
+  }
 
   (async () => {
     if (!slug) { location.href = '/login'; return; }
@@ -167,6 +189,21 @@
     if (!r.ok) { location.href = `/login?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
     const me = await r.json();
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · ART DIRECTOR`;
+
+    // Style pills — photographic (brand-driven) vs line drawing (house style).
+    const swrap = document.getElementById('styles');
+    [['photo', 'Photographic'], ['line', 'Line drawing']].forEach(([s, label], i) => {
+      const b = document.createElement('button');
+      b.className = 'sc-pill mono small';
+      b.textContent = label;
+      b.onclick = () => {
+        applyRenderStyle(s);
+        swrap.querySelectorAll('.sc-pill').forEach(el => el.classList.remove('active'));
+        b.classList.add('active');
+      };
+      if (i === 0) b.click();
+      swrap.appendChild(b);
+    });
 
     // Preset pills come from the brand config; fall back to the classic set.
     let presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
@@ -232,6 +269,7 @@
         credentials: 'same-origin',
         body: JSON.stringify({
           slug, prompt, presetLabel: activePreset,
+          renderStyle: activeRenderStyle,
           styleReferenceUrl: styleRef || undefined,
           structureReferenceUrl: structureRef || undefined,
           modelOverride: activeModel || undefined,
@@ -246,7 +284,7 @@
       document.getElementById('useAsStyle').disabled = false;
       document.getElementById('useAsStructure').disabled = false;
       status.className = 'sc-status ok'; status.textContent = 'Done.';
-      pushHistory({ ts: Date.now(), prompt, preset: activePreset, styleRef, structureRef, model: activeModel, imageUrl: j.imageUrl });
+      pushHistory({ ts: Date.now(), prompt, preset: activePreset, renderStyle: activeRenderStyle, styleRef, structureRef, model: activeModel, imageUrl: j.imageUrl });
     } catch (e) {
       status.className = 'sc-status err'; status.textContent = e.message;
       frame.innerHTML = 'No image yet';
