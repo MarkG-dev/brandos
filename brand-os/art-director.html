@@ -55,6 +55,20 @@
     letter-spacing: var(--tracking-mono); text-transform: uppercase;
   }
   .ref-drop .clear-btn:hover { color: var(--sc-signal); }
+  /* Brand reference kit — one click loads the image into the reference slot. */
+  .brand-refs { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .brand-refs .bref-label {
+    width: 100%; color: var(--sc-mist); margin-bottom: 2px;
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: var(--tracking-mono); text-transform: uppercase;
+  }
+  .brand-refs .bref {
+    width: 60px; height: 60px; border: 1px solid var(--sc-hairline);
+    border-radius: var(--radius-sm); overflow: hidden; cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .brand-refs .bref:hover { border-color: var(--sc-ink); }
+  .brand-refs .bref img { width: 100%; height: 100%; object-fit: cover; display: block; }
 </style>
 </head>
 <body>
@@ -75,38 +89,28 @@
     <div style="display: grid; grid-template-columns: 1fr 1.15fr 0.85fr; gap: var(--space-5);">
       <!-- PROMPT -->
       <div class="sc-card" style="gap: var(--space-4);">
-        <div>
-          <div class="sc-eyebrow" style="margin-bottom: 8px;">Style</div>
-          <div class="sc-navrow" id="styles"></div>
-        </div>
-        <div class="sc-eyebrow" id="promptEyebrow">Prompt</div>
+        <div class="sc-eyebrow" id="styleCaption" style="display:none;">Style · <span id="styleName"></span></div>
+        <div class="sc-eyebrow">Prompt</div>
         <div class="sc-field">
           <textarea id="prompt" style="min-height: 140px;" placeholder="Describe the shot. Palette, framing, and grade come from your art direction — you don't need to specify them."></textarea>
         </div>
         <div>
-          <div class="sc-eyebrow" style="margin-bottom: 8px;" id="presetLabel">Shot preset</div>
+          <div class="sc-eyebrow" style="margin-bottom: 8px;">Shot preset</div>
           <div class="sc-navrow" id="presets"></div>
         </div>
 
         <div>
-          <div class="sc-eyebrow" style="margin-bottom: 8px;">Reference images</div>
+          <div class="sc-eyebrow" style="margin-bottom: 8px;">Reference image</div>
+
+          <div id="brandRefs" class="brand-refs"></div>
 
           <div class="ref-slot">
-            <label class="sc-eyebrow" style="color: var(--sc-mist);">Style reference — color, texture, mood</label>
+            <label class="sc-eyebrow" style="color: var(--sc-mist);">A look to match — optional</label>
             <div class="ref-drop" id="styleDrop" data-slot="style">
               <span class="prompt">Drop or click — jpg / png / webp · max 100 MB</span>
             </div>
             <input type="file" id="stylePicker" accept="image/*" style="display:none;">
             <input type="hidden" id="styleRef">
-          </div>
-
-          <div class="ref-slot" style="margin-top: 10px;">
-            <label class="sc-eyebrow" style="color: var(--sc-mist);">Structure reference — composition, layout</label>
-            <div class="ref-drop" id="structureDrop" data-slot="structure">
-              <span class="prompt">Drop or click — jpg / png / webp · max 100 MB</span>
-            </div>
-            <input type="file" id="structurePicker" accept="image/*" style="display:none;">
-            <input type="hidden" id="structureRef">
           </div>
         </div>
 
@@ -131,8 +135,7 @@
         <div class="sc-row">
           <a class="sc-pill mono small" id="download" download="hero.jpg" style="pointer-events:none; opacity:0.35;">Download</a>
           <button class="sc-pill mono small" id="reroll" disabled>Reroll</button>
-          <button class="sc-pill mono small" id="useAsStyle" disabled>Use as style ref</button>
-          <button class="sc-pill mono small" id="useAsStructure" disabled>Use as structure ref</button>
+          <button class="sc-pill mono small" id="useAsStyle" disabled>Use as reference</button>
         </div>
       </div>
 
@@ -164,25 +167,7 @@
   const HIST_KEY = `brandos:art-director:${slug}`;
   let activePreset = null;
   let activeModel = null;
-  let activeRenderStyle = 'photo';
   let lastImageUrl = null;
-
-  // Copy that swaps when you flip between photographic and line-drawing.
-  const STYLE_COPY = {
-    photo: {
-      promptPlaceholder: "Describe the shot. Palette, framing, and grade come from your art direction — you don't need to specify them.",
-      presetLabel: 'Shot preset',
-    },
-    line: {
-      promptPlaceholder: 'Name the subject to draw — "a haul truck", "a LiDAR sensor housing", "a conveyor system". Renders as clean white linework on black; palette and grade don’t apply.',
-      presetLabel: 'Aspect preset',
-    },
-  };
-  function applyRenderStyle(s) {
-    activeRenderStyle = s;
-    document.getElementById('prompt').placeholder = STYLE_COPY[s].promptPlaceholder;
-    document.getElementById('presetLabel').textContent = STYLE_COPY[s].presetLabel;
-  }
 
   (async () => {
     if (!slug) { location.href = '/login'; return; }
@@ -191,32 +176,18 @@
     const me = await r.json();
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · ART DIRECTOR`;
 
-    // One hub fetch drives both the style label and the preset pills.
-    let primaryStyleLabel = 'Photographic';
+    // One hub fetch drives the style caption, preset pills, and brand refs.
     let presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
     try {
       const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
       const hub = await hubRes.json();
-      if (hub.primaryStyle) primaryStyleLabel = hub.primaryStyle;
+      const styleName = hub.primaryStyle || 'Photographic';
+      document.getElementById('styleName').textContent = styleName;
+      document.getElementById('styleCaption').style.display = '';
       const fromBrand = (hub.presets?.artDirector || []).map(p => p.label).filter(Boolean);
       if (fromBrand.length) presets = fromBrand;
+      renderBrandRefs(hub.assets?.referenceImages);
     } catch {}
-
-    // Style pills — the brand's signature look (brand-driven, applies the
-    // Photography/Framing/Grade direction) vs line drawing (fixed house style).
-    const swrap = document.getElementById('styles');
-    [['photo', primaryStyleLabel], ['line', 'Line drawing']].forEach(([s, label], i) => {
-      const b = document.createElement('button');
-      b.className = 'sc-pill mono small';
-      b.textContent = label;
-      b.onclick = () => {
-        applyRenderStyle(s);
-        swrap.querySelectorAll('.sc-pill').forEach(el => el.classList.remove('active'));
-        b.classList.add('active');
-      };
-      if (i === 0) b.click();
-      swrap.appendChild(b);
-    });
 
     const pwrap = document.getElementById('presets');
     presets.forEach((p, i) => {
@@ -260,23 +231,19 @@
     const dl = document.getElementById('download');
     const rer = document.getElementById('reroll');
     const styleRef = document.getElementById('styleRef').value.trim();
-    const structureRef = document.getElementById('structureRef').value.trim();
     if (!prompt) { status.className = 'sc-status err'; status.textContent = 'Give it a subject.'; return; }
     status.className = 'sc-status'; status.textContent = 'Dialing… (up to 60s)';
     frame.innerHTML = 'Working…';
     dl.style.pointerEvents = 'none'; dl.style.opacity = '0.35';
     rer.disabled = true;
     document.getElementById('useAsStyle').disabled = true;
-    document.getElementById('useAsStructure').disabled = true;
     try {
       const r = await fetch('/api/brand-os/art-director', {
         method: 'POST', headers: { 'content-type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
           slug, prompt, presetLabel: activePreset,
-          renderStyle: activeRenderStyle,
           styleReferenceUrl: styleRef || undefined,
-          structureReferenceUrl: structureRef || undefined,
           modelOverride: activeModel || undefined,
         }),
       });
@@ -287,9 +254,8 @@
       dl.href = j.imageUrl; dl.style.pointerEvents = 'auto'; dl.style.opacity = '1';
       rer.disabled = false;
       document.getElementById('useAsStyle').disabled = false;
-      document.getElementById('useAsStructure').disabled = false;
       status.className = 'sc-status ok'; status.textContent = 'Done.';
-      pushHistory({ ts: Date.now(), prompt, preset: activePreset, renderStyle: activeRenderStyle, styleRef, structureRef, model: activeModel, imageUrl: j.imageUrl });
+      pushHistory({ ts: Date.now(), prompt, preset: activePreset, styleRef, model: activeModel, imageUrl: j.imageUrl });
     } catch (e) {
       status.className = 'sc-status err'; status.textContent = e.message;
       frame.innerHTML = 'No image yet';
@@ -298,22 +264,18 @@
 
   document.getElementById('clear').addEventListener('click', () => {
     document.getElementById('prompt').value = '';
-    clearRef('style'); clearRef('structure');
+    clearRef('style');
     document.getElementById('frame').innerHTML = 'No image yet';
     document.getElementById('status').textContent = '';
     document.getElementById('download').style.pointerEvents = 'none';
     document.getElementById('download').style.opacity = '0.35';
     document.getElementById('reroll').disabled = true;
     document.getElementById('useAsStyle').disabled = true;
-    document.getElementById('useAsStructure').disabled = true;
     lastImageUrl = null;
   });
   document.getElementById('reroll').addEventListener('click', () => document.getElementById('go').click());
   document.getElementById('useAsStyle').addEventListener('click', () => {
     if (lastImageUrl) fillRefFromUrl('style', lastImageUrl, 'previous result');
-  });
-  document.getElementById('useAsStructure').addEventListener('click', () => {
-    if (lastImageUrl) fillRefFromUrl('structure', lastImageUrl, 'previous result');
   });
   document.getElementById('clearHist').addEventListener('click', () => {
     sessionStorage.removeItem(HIST_KEY); renderHistory();
@@ -334,7 +296,7 @@
   }
 
   /* ---------- Reference image upload ---------- */
-  ['style', 'structure'].forEach(slot => {
+  ['style'].forEach(slot => {
     const drop = document.getElementById(slot + 'Drop');
     const picker = document.getElementById(slot + 'Picker');
     drop.addEventListener('click', () => picker.click());
@@ -383,6 +345,28 @@
       <button class="clear-btn" onclick="event.stopPropagation(); window.__clearRef('${slot}')">×</button>
     `;
   }
+
+  // Brand reference kit — one click loads the image into the reference slot.
+  // Root-relative URLs are absolutized so Magnific (which fetches server-side)
+  // can reach them.
+  function renderBrandRefs(list) {
+    const wrap = document.getElementById('brandRefs');
+    if (!wrap || !Array.isArray(list) || !list.length) return;
+    wrap.innerHTML = '<div class="bref-label">Brand references — click to use one</div>';
+    list.forEach(im => {
+      if (!im || !im.url) return;
+      const abs = new URL(im.url, location.origin).href;
+      const el = document.createElement('div');
+      el.className = 'bref';
+      el.title = im.name || 'brand reference';
+      el.innerHTML = `<img src="${escapeHtml(im.url)}" alt="${escapeHtml(im.name || '')}">`;
+      el.addEventListener('click', () => {
+        fillRefFromUrl('style', abs, im.name || 'brand reference');
+      });
+      wrap.appendChild(el);
+    });
+    wrap.style.display = 'flex';
+  }
   function clearRef(slot) {
     const drop = document.getElementById(slot + 'Drop');
     document.getElementById(slot + 'Ref').value = '';
@@ -410,8 +394,6 @@
         document.getElementById('prompt').value = it.prompt || '';
         if (it.styleRef) fillRefFromUrl('style', it.styleRef, 'from history');
         else clearRef('style');
-        if (it.structureRef) fillRefFromUrl('structure', it.structureRef, 'from history');
-        else clearRef('structure');
         document.getElementById('frame').innerHTML = `<img src="${it.imageUrl}" alt="">`;
         lastImageUrl = it.imageUrl;
         const dl = document.getElementById('download');

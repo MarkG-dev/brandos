@@ -7,9 +7,9 @@ configures, clients consume. Target price point $500–2000/mo per brand.
 
 - Copywriter agent (Claude) — brand voice + strategy locked, Write/Rewrite
   modes, word-count pills, brand-driven presets
-- Art Director agent (Magnific Mystic) — brand art direction locked,
-  style/structure refs, shot presets, two render styles (photographic +
-  CAD-style line drawing)
+- Art Director agent (Magnific Mystic) — brand art direction locked, one
+  reference-image field, shot presets, brand-driven style label, and a
+  per-brand reference kit (one-click brand images, e.g. Cenotian watercolors)
 - Client hub with asset kit (PDF guidelines, Agent Guidelines ZIP, library URL)
 - Clean URLs: `/<slug>`, `/<slug>/copywriter`, `/<slug>/art-director`,
   `/<slug>/library` — password gate keeps URL stable

@@ -56,9 +56,6 @@ export default async function handler(req, res) {
   if (!magKey) return res.status(500).json({ error: 'MAGNIFIC_API_KEY not configured' });
 
   const { slug, prompt, presetLabel, styleReferenceUrl, structureReferenceUrl, modelOverride } = req.body || {};
-  // Render style: 'photo' (default, brand-driven photography) or 'line'
-  // (CAD-style white linework on black — a separate, brand-agnostic prompt).
-  const renderStyle = (req.body?.renderStyle === 'line') ? 'line' : 'photo';
   if (!slug || !prompt) return res.status(400).json({ error: 'slug and prompt required' });
   if (payload.role !== 'admin' && payload.slug !== slug) {
     return res.status(403).json({ error: 'Session does not match slug' });
@@ -75,9 +72,7 @@ export default async function handler(req, res) {
     || brand.presets?.artDirector?.[0]
     || {};
 
-  const merged = renderStyle === 'line'
-    ? buildLinePrompt(prompt)
-    : buildPrompt(brand, prompt, preset);
+  const merged = buildPrompt(brand, prompt, preset);
   const aspect = ASPECT_MAP[preset.aspect] || 'square_1_1';
   // Admins can override the brand's default model per-call; clients cannot.
   const model = (payload.role === 'admin' && modelOverride)
@@ -149,7 +144,6 @@ export default async function handler(req, res) {
           model,
           aspect,
           preset: presetLabel || null,
-          renderStyle,
           costUsd,
         }).catch(e => console.error('usage log failed:', e.message));
 
@@ -161,7 +155,6 @@ export default async function handler(req, res) {
           record = await saveImageOutput(slug, {
             prompt,
             preset: presetLabel || null,
-            renderStyle,
             model,
             aspect: preset.aspect || '1:1',
             author: payload.user?.name || (payload.slug === '__admin__' ? 'admin' : payload.slug),
@@ -187,20 +180,6 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
-}
-
-// Technical line illustration — CAD-style white vector linework on pure
-// black. Deliberately brand-agnostic: monochromatic by definition, so it
-// does NOT merge palette / photography / grade the way photo mode does.
-// The subject is the only variable; everything else is a fixed house style.
-function buildLinePrompt(userPrompt) {
-  const subject = userPrompt.trim();
-  return [
-    `Generate one clean monochromatic line illustration of ${subject} using a refined editorial engineering style.`,
-    `Illustrate the subject with crisp white vector linework on a pure black background, using a consistent monoline stroke with only subtle variations to establish visual hierarchy. Construct the illustration from clean contour lines and simplified structural edges, describing the object's volume through geometry rather than shading. Simplify complex forms while preserving the defining proportions, silhouette, and recognizable design language of the subject. Remove unnecessary bolts, branding, identifying graphics, logos, textures, small fasteners, vents, surface imperfections, and intricate internal mechanisms.`,
-    `Reduce repeating elements into clean graphic patterns without losing the character of the object. Large surfaces should remain open and uncluttered, allowing negative space to become an integral part of the composition. Every visible edge should feel intentional, creating a balanced rhythm between detail and empty space. Straight lines must appear perfectly straight, curves should be smooth and continuous, and perspective should be technically accurate. Compose the subject in a three-quarter perspective with generous negative space surrounding it, allowing the object to become the sole focal point. The illustration should feel minimal, balanced, geometric, and highly refined, never busy or overly technical. Render with razor-sharp vector precision, museum-quality edge definition, and exceptional clarity suitable for large-format print, brand guidelines, signage, editorial applications, and digital interfaces. The final artwork should appear isolated on a pure black background with no environmental context, resembling a premium editorial technical drawing where industrial subjects are transformed into elegant graphic icons through disciplined linework and thoughtful simplification.`,
-    `Avoid photorealism, sketch aesthetics, blueprint graphics, cross-hatching, stippling, gradients, shadows, solid fills, texture mapping, painterly effects, glow, distressed effects, decorative ornamentation, clutter, unnecessary detail, environmental backgrounds, typography, branding, logos, labels, or any visual element that distracts from the clarity, precision, and simplicity of the illustration.`,
-  ].join(' ');
 }
 
 function buildPrompt(brand, userPrompt, preset) {

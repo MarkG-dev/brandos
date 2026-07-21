@@ -96,6 +96,7 @@ export default async function handler(req, res) {
       doNotUse: b.voice?.doNotUse || [],
     },
     art: {
+      primaryStyle: b.art?.primaryStyle || existing?.art?.primaryStyle || '',
       palette: b.art?.palette || [],
       photography: b.art?.photography || '',
       framing: b.art?.framing || '',
@@ -116,6 +117,9 @@ export default async function handler(req, res) {
         ? b.assets.pdfGuidelines.filter(f => f && f.url).map(f => ({ name: f.name || '', url: f.url }))
         : (b.assets?.pdfGuidelinesUrl ? [{ name: 'Brand Guidelines.pdf', url: b.assets.pdfGuidelinesUrl }] : []),
       guidelinesZipUrl: b.assets?.guidelinesZipUrl || '',
+      // Curated brand reference images (e.g. the watercolor kit). Not edited in
+      // the admin form yet, so always carried through from the existing config.
+      referenceImages: b.assets?.referenceImages || existing?.assets?.referenceImages || [],
     },
   };
 

@@ -138,6 +138,24 @@
         "url": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/pdf/cenotian/Brand_Guidelines-lVyyh8dQ1Wl48Ab96NmgRYvu7RU4Jg.pdf"
       }
     ],
-    "guidelinesZipUrl": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/cenotian/Cenotian_Design_System-2CQvWqejTSEWTnenN1KhzYPTrXo4M8.zip"
+    "guidelinesZipUrl": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/cenotian/Cenotian_Design_System-2CQvWqejTSEWTnenN1KhzYPTrXo4M8.zip",
+    "referenceImages": [
+      {
+        "name": "Robot arm",
+        "url": "/brand-os/brand-assets/cenotian/watercolor-robot-arm.png"
+      },
+      {
+        "name": "Gearbox",
+        "url": "/brand-os/brand-assets/cenotian/watercolor-gearbox.png"
+      },
+      {
+        "name": "Engineers",
+        "url": "/brand-os/brand-assets/cenotian/watercolor-engineers.png"
+      },
+      {
+        "name": "Facility",
+        "url": "/brand-os/brand-assets/cenotian/watercolor-facility.png"
+      }
+    ]
   }
 }
