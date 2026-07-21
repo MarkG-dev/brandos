@@ -89,6 +89,7 @@ export default async function handler(req, res) {
       audience: b.strategy?.audience || '',
       products: b.strategy?.products || [],
       belief: b.strategy?.belief || '',
+      manifesto: b.strategy?.manifesto ?? existing?.strategy?.manifesto ?? '',
     },
     voice: {
       guidelines: b.voice?.guidelines || '',

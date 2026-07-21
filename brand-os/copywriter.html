@@ -118,7 +118,7 @@
   const HIST_KEY = `brandos:copywriter:${slug}`;
   let activePreset = null;
   let activeWordCount = null;
-  let activeMode = 'rewrite';
+  let activeMode = 'write';
 
   const MODE_COPY = {
     rewrite: {
@@ -148,7 +148,7 @@
 
     // Write / Rewrite mode pills.
     const mwrap = document.getElementById('modes');
-    [['rewrite', 'Rewrite'], ['write', 'Write']].forEach(([m, label], i) => {
+    [['write', 'Write'], ['rewrite', 'Rewrite']].forEach(([m, label], i) => {
       const b = document.createElement('button');
       b.className = 'sc-pill mono small';
       b.textContent = label;

@@ -124,6 +124,7 @@ function buildSystemPrompt(brand, taskInstruction, writeMode = false) {
     strategy.audience && `Audience:\n${strategy.audience}`,
     products && `Products:\n${products}`,
     strategy.belief && `Core belief:\n${strategy.belief}`,
+    strategy.manifesto && `Manifesto (reference for tone, vocabulary, and beliefs — draw on it, don't quote it verbatim unless asked):\n${strategy.manifesto}`,
   ].filter(Boolean).join('\n\n');
 
   const inputFraming = writeMode

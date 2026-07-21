@@ -292,6 +292,8 @@
           <textarea id="strategy_products" placeholder="Collision Avoidance System — 360° detection preventing machine-to-machine and machine-to-person incidents."></textarea></div>
         <div class="sc-field"><label>Core belief / north star</label>
           <textarea id="strategy_belief" placeholder="Autonomy is won in the dark." style="min-height: 80px;"></textarea></div>
+        <div class="sc-field"><label>Manifesto (optional — full text; the Copywriter draws on it for tone, vocabulary, and beliefs)</label>
+          <textarea id="strategy_manifesto" placeholder="Paste the brand manifesto in full. Used as reference by the Copywriter, not quoted verbatim unless asked." style="min-height: 120px;"></textarea></div>
       </div>
 
       <div class="sc-card">
@@ -671,6 +673,7 @@
     document.getElementById('strategy_audience').value = b.strategy?.audience || '';
     document.getElementById('strategy_products').value = (b.strategy?.products || []).join('\n');
     document.getElementById('strategy_belief').value = b.strategy?.belief || '';
+    document.getElementById('strategy_manifesto').value = b.strategy?.manifesto || '';
     document.getElementById('voice_guidelines').value = b.voice?.guidelines || '';
     document.getElementById('voice_examples').value = (b.voice?.examples || []).join('\n');
     document.getElementById('voice_donot').value = (b.voice?.doNotUse || []).join('\n');
@@ -721,6 +724,7 @@
         audience: document.getElementById('strategy_audience').value.trim(),
         products: splitLines(document.getElementById('strategy_products').value),
         belief: document.getElementById('strategy_belief').value.trim(),
+        manifesto: document.getElementById('strategy_manifesto').value.trim(),
       },
       voice: {
         guidelines: document.getElementById('voice_guidelines').value.trim(),
