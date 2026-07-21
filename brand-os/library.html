@@ -54,6 +54,7 @@
     text-decoration: none;
   }
   .lib-card .meta a:hover, .lib-card .meta button:hover { color: var(--sc-ink); border-color: var(--sc-ink); opacity: 1; }
+  .lib-card .meta [data-del]:hover { color: var(--sc-signal); border-color: var(--sc-signal); }
   .lib-empty {
     padding: var(--space-7);
     text-align: center;
@@ -166,20 +167,23 @@
       card.className = 'lib-card';
       const when = fmtDate(o.ts);
       const tag = [o.preset, o.author, when].filter(Boolean).join(' · ');
+      // Only real generated outputs (with an id) are deletable — brand
+      // reference-kit images have no id and are managed in the admin.
+      const delBtn = o.id ? '<button data-del title="Delete">Delete</button>' : '';
 
       if (o.type === 'image' && o.imageUrl) {
         card.innerHTML = `
           <div class="img-wrap"><img loading="lazy" src="${escapeAttr(o.imageUrl)}" alt=""></div>
           <div class="meta">
             <span title="${escapeAttr(o.prompt || '')}">${escapeHtml(tag)}</span>
-            <span class="actions"><a href="${escapeAttr(o.imageUrl)}" download target="_blank" rel="noreferrer">↓</a></span>
+            <span class="actions"><a href="${escapeAttr(o.imageUrl)}" download target="_blank" rel="noreferrer">↓</a>${delBtn}</span>
           </div>`;
       } else if (o.type === 'copy') {
         card.innerHTML = `
           <div class="copy-text">${escapeHtml(o.text || '')}</div>
           <div class="meta">
             <span>${escapeHtml(tag)}</span>
-            <span class="actions"><button data-copy>Copy</button></span>
+            <span class="actions"><button data-copy>Copy</button>${delBtn}</span>
           </div>`;
         card.querySelector('[data-copy]').addEventListener('click', (e) => {
           navigator.clipboard.writeText(o.text || '');
@@ -189,7 +193,24 @@
       } else {
         continue;
       }
+      const del = card.querySelector('[data-del]');
+      if (del) del.addEventListener('click', () => deleteAsset(o));
       grid.appendChild(card);
+    }
+  }
+
+  async function deleteAsset(o) {
+    if (!confirm('Confirm delete? This can’t be undone.')) return;
+    try {
+      const r = await fetch(`/api/brand-os/outputs?slug=${encodeURIComponent(slug)}&id=${encodeURIComponent(o.id)}`, {
+        method: 'DELETE', credentials: 'same-origin',
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Delete failed');
+      allOutputs = allOutputs.filter(x => x.id !== o.id);
+      render();
+    } catch (e) {
+      alert('Delete failed: ' + e.message);
     }
   }
 
