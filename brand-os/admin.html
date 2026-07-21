@@ -308,6 +308,11 @@
 
       <div class="sc-card">
         <div class="sc-eyebrow">Art direction</div>
+        <div class="sc-field mono"><label>Primary image style (label on the client's Style toggle)</label>
+          <input id="primary_style" placeholder="Photographic — or e.g. Watercolor, Illustration, 3D render"></div>
+        <div class="sc-eyebrow" style="text-transform:none; letter-spacing:0; font-family:var(--font-display); font-size:13px; color:var(--sc-mist);">
+          Names the brand's signature look — the first pill in the Art Director next to "Line drawing". The prompt behind it always comes from the Photography / Framing / Grade below. Leave blank for "Photographic".
+        </div>
         <div class="sc-field"><label>Palette (comma-separated, e.g. black:#000000, signal:#FF0000)</label>
           <input id="palette" placeholder="black:#000000, white:#FFFFFF, signal:#FF0000"></div>
         <div id="swatches" style="display:flex; flex-wrap:wrap; gap: 8px;"></div>
@@ -662,6 +667,7 @@
     document.getElementById('voice_guidelines').value = b.voice?.guidelines || '';
     document.getElementById('voice_examples').value = (b.voice?.examples || []).join('\n');
     document.getElementById('voice_donot').value = (b.voice?.doNotUse || []).join('\n');
+    document.getElementById('primary_style').value = b.art?.primaryStyle || '';
     document.getElementById('palette').value = (b.art?.palette || []).map(p => `${p.name}:${p.hex}`).join(', ');
     document.getElementById('photography').value = b.art?.photography || '';
     document.getElementById('framing').value = b.art?.framing || '';
@@ -715,6 +721,7 @@
         doNotUse: splitLines(document.getElementById('voice_donot').value),
       },
       art: {
+        primaryStyle: document.getElementById('primary_style').value.trim(),
         palette: parsePalette(document.getElementById('palette').value),
         photography: document.getElementById('photography').value.trim(),
         framing: document.getElementById('framing').value.trim(),
@@ -1002,11 +1009,15 @@
         applyStrategyMarkdown(md).forEach(k => filled.add(k));
 
         if (!document.getElementById('voice_guidelines').value.trim()) {
-          const voice = extractSection(md, 'Content fundamentals') || extractSection(md, 'Voice');
+          const voice = extractSection(md, 'Content fundamentals') || extractSection(md, 'Voice')
+            || extractLabel(md, ['Voice']);
           if (voice) { document.getElementById('voice_guidelines').value = voice.trim(); filled.add('voice'); }
         }
         if (!document.getElementById('photography').value.trim()) {
-          const photo = extractSection(md, 'Photography') || extractSection(md, 'Visual foundations');
+          // Target the imagery/photography direction — NOT the colors/type that
+          // lead a "Visual foundations" section (that was the old mis-grab).
+          const photo = extractLabel(md, ['Imagery meaning', 'Images', 'Photography', 'Imagery'])
+            || extractSection(md, 'Photography');
           if (photo) { document.getElementById('photography').value = photo.trim().slice(0, 800); filled.add('photography'); }
         }
         if (isNew && !document.getElementById('name').value.trim()) {
@@ -1027,34 +1038,60 @@
   }
 
   // Extract strategy sections from any markdown/text into the form.
+  // Handles two shapes: markdown sub-headings (## Positioning) AND the
+  // design-system README shape where everything sits under one "Brand
+  // strategy" heading as bold-label bullets (- **Audiences**: …).
   // Returns which fields it filled.
   function applyStrategyMarkdown(md) {
     const filled = [];
-    const trySet = (id, ...names) => {
+    const trySet = (id, headings, labels) => {
       const el = document.getElementById(id);
       if (el.value.trim()) return;
-      for (const n of names) {
-        const found = extractSection(md, n);
-        if (found) { el.value = found.trim().slice(0, 2000); filled.push(id); return; }
-      }
+      let found = null;
+      for (const n of headings) { found = extractSection(md, n); if (found) break; }
+      if (!found) found = extractLabel(md, labels);
+      if (found) { el.value = found.trim().slice(0, 2000); filled.push(id); }
     };
-    trySet('strategy_positioning', 'Positioning', 'What we are', 'Company', 'Product');
-    trySet('strategy_audience', 'Audience', 'Who we serve', 'For', 'Users');
-    trySet('strategy_belief', 'Core belief', 'North star', 'Belief', 'Manifesto', 'Vision');
+    trySet('strategy_positioning',
+      ['Positioning', 'What we are', 'Company', 'Product'],
+      ['Positioning', 'What it is', 'What we are']);
+    trySet('strategy_audience',
+      ['Audience', 'Who we serve', 'For', 'Users'],
+      ['Audiences', 'Audience', 'Who we serve']);
+    trySet('strategy_belief',
+      ['Core belief', 'North star', 'Belief', 'Manifesto', 'Vision'],
+      ['Core beliefs', 'Core belief', 'Belief', 'North star', 'Principles']);
 
     const productsEl = document.getElementById('strategy_products');
     if (!productsEl.value.trim()) {
-      const productsRaw = extractSection(md, 'Products') || extractSection(md, 'Product line');
+      const productsRaw = extractSection(md, 'Products') || extractSection(md, 'Product line')
+        || extractLabel(md, ['Products', 'Mechanisms', 'Offer']);
       if (productsRaw) {
-        const bullets = productsRaw
-          .split('\n')
-          .map(l => l.trim())
-          .filter(l => /^[-*•]/.test(l))
-          .map(l => l.replace(/^[-*•]\s*/, ''));
-        if (bullets.length) { productsEl.value = bullets.join('\n'); filled.push('strategy_products'); }
+        let out = productsRaw
+          .split('\n').map(l => l.trim())
+          .filter(l => /^[-*•]/.test(l)).map(l => l.replace(/^[-*•]\s*/, ''));
+        if (!out.length) {
+          // Inline comma list ("milestone funding, residual-value collateral, …")
+          const parts = productsRaw.replace(/\.$/, '').split(/,\s*(?![^(]*\))/).map(s => s.trim()).filter(Boolean);
+          out = parts.length > 1 ? parts : [productsRaw.trim()];
+        }
+        if (out.length) { productsEl.value = out.join('\n'); filled.push('strategy_products'); }
       }
     }
     return filled;
+  }
+
+  // Match a bold-label bullet — "- **Label** (opt): value" — capturing up to
+  // the next bold-label bullet, heading, or end. First label that hits wins.
+  function extractLabel(md, labels) {
+    for (const label of labels) {
+      const re = new RegExp(
+        `\\*\\*${escapeRe(label)}\\*\\*[^\\n:]*:?\\s*([\\s\\S]*?)(?=\\n\\s*[-*]\\s*\\*\\*|\\n#{1,4}\\s|$)`,
+        'i');
+      const m = md.match(re);
+      if (m && m[1].trim()) return m[1].trim();
+    }
+    return null;
   }
   function extractPalette(css) {
     const found = []; const re = /--([a-z0-9-]+):\s*(?:rgb\((\d+),\s*(\d+),\s*(\d+)\)|(#[0-9a-fA-F]{3,8}))/gi;

@@ -191,9 +191,21 @@
     const me = await r.json();
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · ART DIRECTOR`;
 
-    // Style pills — photographic (brand-driven) vs line drawing (house style).
+    // One hub fetch drives both the style label and the preset pills.
+    let primaryStyleLabel = 'Photographic';
+    let presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
+    try {
+      const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
+      const hub = await hubRes.json();
+      if (hub.primaryStyle) primaryStyleLabel = hub.primaryStyle;
+      const fromBrand = (hub.presets?.artDirector || []).map(p => p.label).filter(Boolean);
+      if (fromBrand.length) presets = fromBrand;
+    } catch {}
+
+    // Style pills — the brand's signature look (brand-driven, applies the
+    // Photography/Framing/Grade direction) vs line drawing (fixed house style).
     const swrap = document.getElementById('styles');
-    [['photo', 'Photographic'], ['line', 'Line drawing']].forEach(([s, label], i) => {
+    [['photo', primaryStyleLabel], ['line', 'Line drawing']].forEach(([s, label], i) => {
       const b = document.createElement('button');
       b.className = 'sc-pill mono small';
       b.textContent = label;
@@ -206,14 +218,6 @@
       swrap.appendChild(b);
     });
 
-    // Preset pills come from the brand config; fall back to the classic set.
-    let presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
-    try {
-      const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
-      const hub = await hubRes.json();
-      const fromBrand = (hub.presets?.artDirector || []).map(p => p.label).filter(Boolean);
-      if (fromBrand.length) presets = fromBrand;
-    } catch {}
     const pwrap = document.getElementById('presets');
     presets.forEach((p, i) => {
       const b = document.createElement('button');

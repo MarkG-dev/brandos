@@ -38,6 +38,7 @@
     ]
   },
   "art": {
+    "primaryStyle": "Watercolor",
     "palette": [
       {
         "name": "color off white",
