@@ -5,15 +5,37 @@
   "createdAt": "2026-07-21T15:24:12.718Z",
   "users": [],
   "strategy": {
-    "positioning": "",
-    "audience": "",
-    "products": [],
-    "belief": ""
+    "positioning": "Cenotian is project financing for robotics and automation execution — not asset financing, not lending. It finances the full commercial and operational gap (customer order → engineering → components → build → FAT → SAT → final payment) and never treats the machine as mere collateral. Category insight: adoption is finance-gated, not tech-gated — the robots work; the bottleneck is how to capitalize the project. Every capital market (aircraft, towers, data centers) eventually separated builders from financiers; robotics has builders and integrators but no financing layer yet — Cenotian is defining that standard. Tagline: Industrializing Sovereignty. Rallying cry: Now build.",
+    "audience": "Systems integrators, robotics builders / OEMs, and capital allocators. Acceptance test: a systems integrator and a capital allocator should both get it on the first scroll.",
+    "products": [
+      "Milestone-based funding — capital released against project milestones, from order through FAT/SAT to final payment.",
+      "Residual-value collateral — financing structured against the machine's residual value rather than treating it as mere collateral.",
+      "Customer payment structuring — payment terms structured across the full commercial and operational gap.",
+      "Compliance & service layers — compliance and service wrapped around the financing."
+    ],
+    "belief": "Industrial capacity defines sovereignty — a nation that cannot produce what it consumes imports its sovereignty, so never give away the means of production. Technology is no longer the constraint; deployment is. Invention creates possibility; deployment decides who owns it. The next age belongs to those who deploy — the Sovereignty Age. We build the things that build the things that build our nations. Now build."
   },
   "voice": {
     "guidelines": "- **Tone:** engineered, calm, declarative. Short stacked statements: \"System by system. Floor by floor. Robot by robot.\"\n- **No UPPERCASE text anywhere** — never set copy, headlines, labels, or buttons in all caps (no `text-transform: uppercase`). Headlines are sentence case. Buttons and links use Title Case (\"More Info\", \"Contact\", \"Know More\").\n- **Voice is \"our\"/\"we\" institutional** (\"Our photography captures…\"); addresses the reader plainly, no hype, no exclamation points.\n- **No emoji anywhere.** Numbers are treated typographically (big Flecha figures in charts: \"25\", \"75\", \"1,15M\" — European decimal comma appears in the source).\n- **Copy pairs the technical with the human:** \"both technological and distinctly human\", \"precision and purpose\".\n- **Copy draws from the BRAND STRATEGY section above:** use the coined vocabulary (Sovereignty Age, Deployment Bottleneck, Productive Capital…), take a side, favor antithesis and repetition cadence. Name the enemy terms (Spreadsheet Capitalism, Rented Sovereignty) only to indict them.\n- **Long-form copy follows the manifesto arc:** past greatness → the betrayal → we shall build. Close with \"Now build.\" where a rallying close fits.\n- **Product copy is concrete about the offer:** project financing for robotics/automation execution (milestone funding, residual-value collateral, payment structuring) — never \"leasing\" or \"lending\".\n- **Register:** loud conviction, quiet craft. Declarative, no hype, no hedging.",
-    "examples": [],
-    "doNotUse": []
+    "examples": [
+      "Invention creates possibility. Deployment decides who owns it.",
+      "System by system. Floor by floor. Robot by robot.",
+      "Industrializing Sovereignty.",
+      "Capital belongs on the factory floor, not the trading floor.",
+      "The engineer is always right; the spreadsheet is always suspect.",
+      "Now build."
+    ],
+    "doNotUse": [
+      "hype",
+      "exclamation points",
+      "apology",
+      "hedging",
+      "tech gloss",
+      "nostalgia for smoke-and-coal",
+      "emoji",
+      "UPPERCASE / all-caps",
+      "the words \"leasing\" or \"lending\""
+    ]
   },
   "art": {
     "palette": [
@@ -46,10 +68,16 @@
         "hex": "#E15F60"
       }
     ],
-    "photography": "- **Colors** (section 03): Off-white `#F4F3F2`, Grey `#D0D0D0`, Charcoal `#252423`, Beige `#CBC1B9`. Shades are opacity tints of charcoal and beige at 75/50/25/10%. Complementary Green `#569D7B` and Red `#E15F60` (+50% tints) exist for functional data separation only — never decorative. Max contrast pairings per section 04: charcoal text on off-white/grey/beige; off-white or beige text on charcoal (for rare cases like the footer).\n- **Type** (05–06): Primary **Flecha Test S** (regular only) for headings; 90–105% line-height, 0 letter-spacing, sentence case. Secondary **Inter** (regular) for subheadings (100–110% LH), body (110–130% LH), buttons/captions/technical details (15px/12px, 0% tracking, Title Case for UI labels). Flecha and Inter are the ONLY brand fonts. No bold display type; hie",
-    "framing": "",
-    "grade": "",
-    "referenceCues": []
+    "photography": "Monochrome black-and-white watercolor treatment of robotics and industrial subjects with human presence — the engineer, the bearing, the mechanism, the facility. The Robotic Renaissance made literal: subjects given the dignity of craft rather than the gloss of tech — a classical rendering of the future, art in harmony with work and never louder than the work itself. Painterly paper-white wash, no color.",
+    "framing": "Subject-forward and calm — the mechanism or figure centered and legible, carrying the frame. No clutter, no staging, no posed action. Framed images use a 5px radius; unframed images fade into a solid, untextured background.",
+    "grade": "Black-and-white watercolor: monochrome charcoal wash on paper-white with a soft tonal range and no color. Reads as if multiply-blended onto a flat brand surface (paper-white merges into the background). No gradients, drop shadows, HDR, or digital gloss.",
+    "referenceCues": [
+      "watercolor robot arm",
+      "watercolor gearbox / bearing detail",
+      "watercolor engineers at work",
+      "watercolor factory floor / facility",
+      "monochrome paper-white wash, multiply blend"
+    ]
   },
   "presets": {
     "copywriter": [
