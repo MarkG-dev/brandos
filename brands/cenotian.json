@@ -105,24 +105,24 @@
     ],
     "artDirector": [
       {
-        "label": "Hero horizontal",
-        "aspect": "3:2",
-        "hint": "wide landscape composition, low horizon, headroom for wordmark"
+        "label": "Banner",
+        "aspect": "16:9",
+        "hint": "wide cinematic landscape, generous negative space for a headline or wordmark"
       },
       {
-        "label": "Product still",
+        "label": "Social post",
         "aspect": "1:1",
-        "hint": "product-first, hairline shadow, orthogonal composition"
+        "hint": "centered square composition, balanced negative space"
       },
       {
-        "label": "Social square",
-        "aspect": "1:1",
-        "hint": "eye-level composition, headroom for wordmark, negative space bottom-left"
+        "label": "Portrait",
+        "aspect": "4:5",
+        "hint": "tall feed composition, subject centered, room top and bottom"
       },
       {
-        "label": "Story portrait",
+        "label": "Story",
         "aspect": "9:16",
-        "hint": "vertical, subject centred, minimal background clutter"
+        "hint": "full-bleed vertical, subject centered, minimal background clutter"
       }
     ]
   },

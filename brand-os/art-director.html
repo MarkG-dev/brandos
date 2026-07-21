@@ -55,6 +55,14 @@
     letter-spacing: var(--tracking-mono); text-transform: uppercase;
   }
   .ref-drop .clear-btn:hover { color: var(--sc-signal); }
+  /* Preset pills — two-line: use-case label + representative dimensions. */
+  .preset-pill {
+    flex-direction: column; align-items: flex-start;
+    gap: 1px; line-height: 1.25; text-align: left;
+    padding-top: 8px; padding-bottom: 8px;
+  }
+  .preset-pill .pp-label { display: block; }
+  .preset-pill .pp-dims { display: block; font-size: 9px; opacity: 0.55; letter-spacing: 0.04em; }
   /* Brand reference kit — one click loads the image into the reference slot. */
   .brand-refs { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
   .brand-refs .bref-label {
@@ -169,6 +177,15 @@
   let activeModel = null;
   let lastImageUrl = null;
 
+  // Representative pixel dimensions per aspect, shown on the preset pills.
+  // (Output renders at 2k in the same ratio.)
+  const ASPECT_DIMS = {
+    '1:1': '1080 × 1080', '3:2': '1620 × 1080', '2:3': '1080 × 1620',
+    '4:3': '1440 × 1080', '3:4': '1080 × 1440', '16:9': '1920 × 1080',
+    '9:16': '1080 × 1920', '2:1': '1600 × 800', '1:2': '800 × 1600',
+    '4:5': '1080 × 1350',
+  };
+
   (async () => {
     if (!slug) { location.href = '/login'; return; }
     const r = await fetch('/api/brand-os/session', { credentials: 'same-origin' });
@@ -177,14 +194,19 @@
     document.getElementById('brandTag').textContent = `${(me.name || slug).toUpperCase()} · ART DIRECTOR`;
 
     // One hub fetch drives the style caption, preset pills, and brand refs.
-    let presets = ['Hero horizontal', 'Product still', 'Social square', 'Story portrait'];
+    let presets = [
+      { label: 'Banner', aspect: '16:9' },
+      { label: 'Social post', aspect: '1:1' },
+      { label: 'Portrait', aspect: '4:5' },
+      { label: 'Story', aspect: '9:16' },
+    ];
     try {
       const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
       const hub = await hubRes.json();
       const styleName = hub.primaryStyle || 'Photographic';
       document.getElementById('styleName').textContent = styleName;
       document.getElementById('styleCaption').style.display = '';
-      const fromBrand = (hub.presets?.artDirector || []).map(p => p.label).filter(Boolean);
+      const fromBrand = (hub.presets?.artDirector || []).filter(p => p.label);
       if (fromBrand.length) presets = fromBrand;
       renderBrandRefs(hub.assets?.referenceImages);
     } catch {}
@@ -192,10 +214,12 @@
     const pwrap = document.getElementById('presets');
     presets.forEach((p, i) => {
       const b = document.createElement('button');
-      b.className = 'sc-pill mono small';
-      b.textContent = p;
+      b.className = 'sc-pill mono small preset-pill';
+      const dims = ASPECT_DIMS[p.aspect];
+      b.innerHTML = `<span class="pp-label">${escapeHtml(p.label)}</span>`
+        + (dims ? `<span class="pp-dims">${dims}</span>` : '');
       b.onclick = () => {
-        activePreset = p;
+        activePreset = p.label;
         pwrap.querySelectorAll('.sc-pill').forEach(el => el.classList.remove('active'));
         b.classList.add('active');
       };

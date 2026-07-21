@@ -422,10 +422,10 @@
           { label: 'Explain simply', prompt: 'Rewrite in plain language for someone unfamiliar with the category.' },
         ],
         artDirector: [
-          { label: 'Hero horizontal', aspect: '3:2', hint: 'wide landscape composition, low horizon, headroom for wordmark' },
-          { label: 'Product still', aspect: '1:1', hint: 'product-first, hairline shadow, orthogonal composition' },
-          { label: 'Social square', aspect: '1:1', hint: 'eye-level composition, headroom for wordmark, negative space bottom-left' },
-          { label: 'Story portrait', aspect: '9:16', hint: 'vertical, subject centred, minimal background clutter' },
+          { label: 'Banner', aspect: '16:9', hint: 'wide cinematic landscape, generous negative space for a headline or wordmark' },
+          { label: 'Social post', aspect: '1:1', hint: 'centered square composition, balanced negative space' },
+          { label: 'Portrait', aspect: '4:5', hint: 'tall feed composition, subject centered, room top and bottom' },
+          { label: 'Story', aspect: '9:16', hint: 'full-bleed vertical, subject centered, minimal background clutter' },
         ],
       });
     } else {
@@ -511,6 +511,13 @@
 
   // ---- Preset editors -------------------------------------------------
   const AD_ASPECTS = ['1:1', '3:2', '2:3', '4:3', '3:4', '16:9', '9:16', '2:1', '1:2', '4:5'];
+  // Representative pixel dimensions per aspect (output renders at 2k in-ratio).
+  const ASPECT_DIMS = {
+    '1:1': '1080 × 1080', '3:2': '1620 × 1080', '2:3': '1080 × 1620',
+    '4:3': '1440 × 1080', '3:4': '1080 × 1440', '16:9': '1920 × 1080',
+    '9:16': '1080 × 1920', '2:1': '1600 × 800', '1:2': '800 × 1600',
+    '4:5': '1080 × 1350',
+  };
 
   function cwPresetRow(p = {}) {
     const row = document.createElement('div');
@@ -527,7 +534,7 @@
     const row = document.createElement('div');
     row.style.cssText = 'display:grid; grid-template-columns: 180px 90px 1fr auto; gap: 8px; align-items: start;';
     row.dataset.presetRow = 'ad';
-    const opts = AD_ASPECTS.map(a => `<option value="${a}"${a === (p.aspect || '1:1') ? ' selected' : ''}>${a}</option>`).join('');
+    const opts = AD_ASPECTS.map(a => `<option value="${a}"${a === (p.aspect || '1:1') ? ' selected' : ''}>${a} · ${ASPECT_DIMS[a] || ''}</option>`).join('');
     row.innerHTML = `
       <input class="p-label" placeholder="Label" value="${escapeAttr(p.label || '')}" style="font-family: var(--font-mono);">
       <select class="p-aspect">${opts}</select>

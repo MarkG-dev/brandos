@@ -234,9 +234,9 @@ function defaultCopywriterPresets() {
 
 function defaultArtDirectorPresets() {
   return [
-    { label: 'Hero horizontal', aspect: '3:2', hint: 'wide landscape composition, low horizon, headroom for wordmark' },
-    { label: 'Product still', aspect: '1:1', hint: 'product-first, hairline shadow, orthogonal composition' },
-    { label: 'Social square', aspect: '1:1', hint: 'eye-level composition, headroom for wordmark, negative space bottom-left' },
-    { label: 'Story portrait', aspect: '9:16', hint: 'vertical, subject centred, minimal background clutter' },
+    { label: 'Banner', aspect: '16:9', hint: 'wide cinematic landscape, generous negative space for a headline or wordmark' },
+    { label: 'Social post', aspect: '1:1', hint: 'centered square composition, balanced negative space' },
+    { label: 'Portrait', aspect: '4:5', hint: 'tall feed composition, subject centered, room top and bottom' },
+    { label: 'Story', aspect: '9:16', hint: 'full-bleed vertical, subject centered, minimal background clutter' },
   ];
 }
