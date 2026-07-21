@@ -1,7 +1,7 @@
 {
   "name": "Cenotian",
   "slug": "cenotian",
-  "passwordHash": "$2a$10$R.XWBGQUSJ2tp/rabPGvoebBRSmkdnuIj3HQzH49MqHxrqI7twEGe",
+  "passwordHash": "$2a$10$1HV5M.hA0GISfpDf4u0kHevFmVNzzjP0tFE/ZTwRI3SjoxmBNSDCK",
   "createdAt": "2026-07-21T15:24:12.718Z",
   "users": [],
   "strategy": {
@@ -102,8 +102,13 @@
     "artDirector": "realism"
   },
   "assets": {
-    "assetLibraryUrl": "",
-    "pdfGuidelines": [],
-    "guidelinesZipUrl": ""
+    "assetLibraryUrl": "https://www.figma.com/slides/cHUH1eCUPdu6FqCD4KY2xR",
+    "pdfGuidelines": [
+      {
+        "name": "Brand Guidelines.pdf",
+        "url": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/pdf/cenotian/Brand_Guidelines-lVyyh8dQ1Wl48Ab96NmgRYvu7RU4Jg.pdf"
+      }
+    ],
+    "guidelinesZipUrl": "https://dpwv6xbsym1qp4i0.public.blob.vercel-storage.com/brand-os/assets/cenotian/Cenotian_Design_System-2CQvWqejTSEWTnenN1KhzYPTrXo4M8.zip"
   }
 }
