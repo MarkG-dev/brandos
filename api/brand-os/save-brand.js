@@ -225,11 +225,11 @@ function authHeaders(pat) {
 
 function defaultCopywriterPresets() {
   return [
-    { label: 'Tighten', prompt: 'Cut every unnecessary word. Preserve meaning, sharpen tone.' },
-    { label: 'Tagline', prompt: 'One line, max 8 words, in brand voice.' },
-    { label: 'Headline', prompt: 'A display headline in the brand voice. UPPERCASE if the brand direction calls for it.' },
     { label: 'Social post', prompt: 'A social post in the brand voice. First line is the hook. Short paragraphs. No hashtags, no emoji.' },
+    { label: 'Tagline', prompt: 'One line, max 8 words, in brand voice.' },
+    { label: 'Headline', prompt: 'A display headline in the brand voice.' },
     { label: 'Explain simply', prompt: 'Rewrite in plain language for someone unfamiliar with the category.' },
+    { label: 'Tighten', prompt: 'Cut every unnecessary word. Preserve meaning, sharpen tone.' },
   ];
 }
 

@@ -55,7 +55,13 @@
         <div class="sc-eyebrow">Source</div>
         <div>
           <div class="sc-eyebrow" style="margin-bottom: 8px;">Mode</div>
-          <div class="sc-navrow" id="modes"></div>
+          <div class="sc-row" style="justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: nowrap;">
+            <div class="sc-navrow" id="modes"></div>
+            <div class="sc-row" style="align-items: center; gap: var(--space-3); flex-wrap: nowrap;">
+              <span class="sc-status" id="status"></span>
+              <button class="sc-pill solid" id="go">Go →</button>
+            </div>
+          </div>
         </div>
         <div class="sc-field">
           <label id="sourceLabel" class="sc-eyebrow" style="margin-bottom: 6px;">Source text</label>
@@ -68,13 +74,6 @@
         <div>
           <div class="sc-eyebrow" style="margin-bottom: 8px;">Word count</div>
           <div class="sc-navrow" id="wordcounts"></div>
-        </div>
-        <div class="sc-row" style="justify-content: space-between;">
-          <div class="sc-row">
-            <button class="sc-pill solid" id="go">Rewrite →</button>
-            <button class="sc-pill mono small" id="clear">Clear</button>
-          </div>
-          <span class="sc-status" id="status"></span>
         </div>
       </div>
 
@@ -124,19 +123,16 @@
     rewrite: {
       label: 'Source text',
       placeholder: 'Paste the text to rewrite — a headline, a paragraph, a raw idea.',
-      button: 'Rewrite →',
     },
     write: {
       label: 'Brief',
       placeholder: 'Describe what you need — "a LinkedIn post announcing the SLAM release", "three headline options for the collision-avoidance page".',
-      button: 'Write →',
     },
   };
   function applyMode(m) {
     activeMode = m;
     document.getElementById('sourceLabel').textContent = MODE_COPY[m].label;
     document.getElementById('source').placeholder = MODE_COPY[m].placeholder;
-    document.getElementById('go').textContent = MODE_COPY[m].button;
   }
 
   (async () => {
@@ -162,7 +158,7 @@
     });
 
     // Preset pills come from the brand config; fall back to the classic set.
-    let presets = ['Tighten', 'Rewrite as tagline', 'Headline', 'Explain simply'];
+    let presets = ['Social post', 'Tagline', 'Headline', 'Explain simply', 'Tighten'];
     try {
       const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
       const hub = await hubRes.json();
@@ -234,11 +230,6 @@
     }
   });
 
-  document.getElementById('clear').addEventListener('click', () => {
-    document.getElementById('source').value = '';
-    document.getElementById('output').innerHTML = '<span class="sc-eyebrow">Waiting for input</span>';
-    document.getElementById('status').textContent = '';
-  });
   document.getElementById('copy').addEventListener('click', () => {
     navigator.clipboard.writeText(document.getElementById('output').textContent);
     const s = document.getElementById('status');
