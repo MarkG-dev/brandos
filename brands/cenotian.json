@@ -1,0 +1,109 @@
+{
+  "name": "Cenotian",
+  "slug": "cenotian",
+  "passwordHash": "$2a$10$R.XWBGQUSJ2tp/rabPGvoebBRSmkdnuIj3HQzH49MqHxrqI7twEGe",
+  "createdAt": "2026-07-21T15:24:12.718Z",
+  "users": [],
+  "strategy": {
+    "positioning": "",
+    "audience": "",
+    "products": [],
+    "belief": ""
+  },
+  "voice": {
+    "guidelines": "- **Tone:** engineered, calm, declarative. Short stacked statements: \"System by system. Floor by floor. Robot by robot.\"\n- **No UPPERCASE text anywhere** — never set copy, headlines, labels, or buttons in all caps (no `text-transform: uppercase`). Headlines are sentence case. Buttons and links use Title Case (\"More Info\", \"Contact\", \"Know More\").\n- **Voice is \"our\"/\"we\" institutional** (\"Our photography captures…\"); addresses the reader plainly, no hype, no exclamation points.\n- **No emoji anywhere.** Numbers are treated typographically (big Flecha figures in charts: \"25\", \"75\", \"1,15M\" — European decimal comma appears in the source).\n- **Copy pairs the technical with the human:** \"both technological and distinctly human\", \"precision and purpose\".\n- **Copy draws from the BRAND STRATEGY section above:** use the coined vocabulary (Sovereignty Age, Deployment Bottleneck, Productive Capital…), take a side, favor antithesis and repetition cadence. Name the enemy terms (Spreadsheet Capitalism, Rented Sovereignty) only to indict them.\n- **Long-form copy follows the manifesto arc:** past greatness → the betrayal → we shall build. Close with \"Now build.\" where a rallying close fits.\n- **Product copy is concrete about the offer:** project financing for robotics/automation execution (milestone funding, residual-value collateral, payment structuring) — never \"leasing\" or \"lending\".\n- **Register:** loud conviction, quiet craft. Declarative, no hype, no hedging.",
+    "examples": [],
+    "doNotUse": []
+  },
+  "art": {
+    "palette": [
+      {
+        "name": "color off white",
+        "hex": "#F4F3F2"
+      },
+      {
+        "name": "color grey",
+        "hex": "#D0D0D0"
+      },
+      {
+        "name": "color charcoal",
+        "hex": "#252423"
+      },
+      {
+        "name": "color beige",
+        "hex": "#CBC1B9"
+      },
+      {
+        "name": "color white",
+        "hex": "#FFFFFF"
+      },
+      {
+        "name": "color green",
+        "hex": "#569D7B"
+      },
+      {
+        "name": "color red",
+        "hex": "#E15F60"
+      }
+    ],
+    "photography": "- **Colors** (section 03): Off-white `#F4F3F2`, Grey `#D0D0D0`, Charcoal `#252423`, Beige `#CBC1B9`. Shades are opacity tints of charcoal and beige at 75/50/25/10%. Complementary Green `#569D7B` and Red `#E15F60` (+50% tints) exist for functional data separation only — never decorative. Max contrast pairings per section 04: charcoal text on off-white/grey/beige; off-white or beige text on charcoal (for rare cases like the footer).\n- **Type** (05–06): Primary **Flecha Test S** (regular only) for headings; 90–105% line-height, 0 letter-spacing, sentence case. Secondary **Inter** (regular) for subheadings (100–110% LH), body (110–130% LH), buttons/captions/technical details (15px/12px, 0% tracking, Title Case for UI labels). Flecha and Inter are the ONLY brand fonts. No bold display type; hie",
+    "framing": "",
+    "grade": "",
+    "referenceCues": []
+  },
+  "presets": {
+    "copywriter": [
+      {
+        "label": "Tighten",
+        "prompt": "Cut every unnecessary word. Preserve meaning, sharpen tone."
+      },
+      {
+        "label": "Tagline",
+        "prompt": "One line, max 8 words, in brand voice."
+      },
+      {
+        "label": "Headline",
+        "prompt": "A display headline in the brand voice."
+      },
+      {
+        "label": "Social post",
+        "prompt": "A social post in the brand voice. First line is the hook. Short paragraphs. No hashtags, no emoji."
+      },
+      {
+        "label": "Explain simply",
+        "prompt": "Rewrite in plain language for someone unfamiliar with the category."
+      }
+    ],
+    "artDirector": [
+      {
+        "label": "Hero horizontal",
+        "aspect": "3:2",
+        "hint": "wide landscape composition, low horizon, headroom for wordmark"
+      },
+      {
+        "label": "Product still",
+        "aspect": "1:1",
+        "hint": "product-first, hairline shadow, orthogonal composition"
+      },
+      {
+        "label": "Social square",
+        "aspect": "1:1",
+        "hint": "eye-level composition, headroom for wordmark, negative space bottom-left"
+      },
+      {
+        "label": "Story portrait",
+        "aspect": "9:16",
+        "hint": "vertical, subject centred, minimal background clutter"
+      }
+    ]
+  },
+  "model": {
+    "copywriter": "claude-opus-4-8",
+    "artDirector": "realism"
+  },
+  "assets": {
+    "assetLibraryUrl": "",
+    "pdfGuidelines": [],
+    "guidelinesZipUrl": ""
+  }
+}
