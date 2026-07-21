@@ -145,5 +145,8 @@ ${examples}
 Do NOT use:
 ${doNotUse}
 
+House rules (all brands):
+- State claims affirmatively. Assert what is — never define something by what it isn't. Avoid "not X, but Y", "it isn't X, it's Y", and "Not this. Not that." negation-contrast constructions; they read as AI-generated. Positive antithesis — two affirmative statements set against each other — is fine.
+
 Return ONLY the ${writeMode ? 'copy' : 'rewritten text'}. No preface, no explanation, no quote marks around it.`;
 }
