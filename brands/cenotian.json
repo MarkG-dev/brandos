@@ -69,8 +69,8 @@
         "hex": "#E15F60"
       }
     ],
-    "photography": "Monochrome black-and-white watercolor treatment of robotics and industrial subjects with human presence — the engineer, the bearing, the mechanism, the facility. The Robotic Renaissance made literal: subjects given the dignity of craft rather than the gloss of tech — a classical rendering of the future, art in harmony with work and never louder than the work itself. Painterly paper-white wash, no color.",
-    "framing": "Subject-forward and calm — the mechanism or figure centered and legible, carrying the frame. No clutter, no staging, no posed action. Framed images use a 5px radius; unframed images fade into a solid, untextured background.",
+    "photography": "Monochrome black-and-white watercolor treatment. Subject follows the brief — robotics, industrial scenes, or people, depending on the case — each rendered with the dignity of craft rather than the gloss of tech. The Robotic Renaissance made literal: a classical rendering of the future, art in harmony with work and never louder than the work itself. The watercolor treatment is the constant; let the prompt lead the subject. Painterly paper-white wash, no color.",
+    "framing": "Subject-forward and calm — the subject (figure, machine, or structure) centered and legible, carrying the frame. No clutter, no staging, no posed action. Framed images use a 5px radius; unframed images fade into a solid, untextured background.",
     "grade": "Black-and-white watercolor: monochrome charcoal wash on paper-white with a soft tonal range and no color. Reads as if multiply-blended onto a flat brand surface (paper-white merges into the background). No gradients, drop shadows, HDR, or digital gloss.",
     "referenceCues": [
       "watercolor robot arm",
