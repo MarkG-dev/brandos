@@ -71,7 +71,9 @@
       "operator in cabin, high-contrast BW",
       "sensor array on machinery, orthogonal composition",
       "particles in shaft of light"
-    ]
+    ],
+    "primaryStyle": "Photographic",
+    "lineStyle": true
   },
   "presets": {
     "copywriter": [

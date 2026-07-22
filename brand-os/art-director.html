@@ -98,6 +98,10 @@
       <!-- PROMPT -->
       <div class="sc-card" style="gap: var(--space-4);">
         <div class="sc-eyebrow" id="styleCaption" style="display:none;">Style · <span id="styleName"></span></div>
+        <div id="styleToggle" style="display:none;">
+          <div class="sc-eyebrow" style="margin-bottom: 8px;">Style</div>
+          <div class="sc-navrow" id="styles"></div>
+        </div>
         <div class="sc-eyebrow">Prompt</div>
         <div class="sc-field">
           <textarea id="prompt" style="min-height: 140px;" placeholder="Describe the shot. Palette, framing, and grade come from your art direction — you don't need to specify them."></textarea>
@@ -175,7 +179,17 @@
   const HIST_KEY = `brandos:art-director:${slug}`;
   let activePreset = null;
   let activeModel = null;
+  let activeRenderStyle = 'photo';
   let lastImageUrl = null;
+
+  const STYLE_PLACEHOLDER = {
+    photo: "Describe the shot. Palette, framing, and grade come from your art direction — you don't need to specify them.",
+    line: 'Name the subject to draw — "a haul truck", "a sensor housing", "a conveyor". Renders as clean white linework on black.',
+  };
+  function applyRenderStyle(s) {
+    activeRenderStyle = s;
+    document.getElementById('prompt').placeholder = STYLE_PLACEHOLDER[s] || STYLE_PLACEHOLDER.photo;
+  }
 
   // Representative pixel dimensions per aspect, shown on the preset pills.
   // (Output renders at 2k in the same ratio.)
@@ -204,8 +218,27 @@
       const hubRes = await fetch(`/api/brand-os/hub?slug=${encodeURIComponent(slug)}`, { credentials: 'same-origin' });
       const hub = await hubRes.json();
       const styleName = hub.primaryStyle || 'Photographic';
-      document.getElementById('styleName').textContent = styleName;
-      document.getElementById('styleCaption').style.display = '';
+      if (hub.lineStyle) {
+        // Two styles → a toggle: the brand's primary look vs Line drawing.
+        const swrap = document.getElementById('styles');
+        [['photo', styleName], ['line', 'Line']].forEach(([s, label], i) => {
+          const b = document.createElement('button');
+          b.className = 'sc-pill mono small';
+          b.textContent = label;
+          b.onclick = () => {
+            applyRenderStyle(s);
+            swrap.querySelectorAll('.sc-pill').forEach(el => el.classList.remove('active'));
+            b.classList.add('active');
+          };
+          if (i === 0) b.click();
+          swrap.appendChild(b);
+        });
+        document.getElementById('styleToggle').style.display = '';
+      } else {
+        // One style → a static caption.
+        document.getElementById('styleName').textContent = styleName;
+        document.getElementById('styleCaption').style.display = '';
+      }
       const fromBrand = (hub.presets?.artDirector || []).filter(p => p.label);
       if (fromBrand.length) presets = fromBrand;
       renderBrandRefs(hub.assets?.referenceImages);
@@ -267,6 +300,7 @@
         credentials: 'same-origin',
         body: JSON.stringify({
           slug, prompt, presetLabel: activePreset,
+          renderStyle: activeRenderStyle,
           styleReferenceUrl: styleRef || undefined,
           modelOverride: activeModel || undefined,
         }),
@@ -279,7 +313,7 @@
       rer.disabled = false;
       document.getElementById('useAsStyle').disabled = false;
       status.className = 'sc-status ok'; status.textContent = 'Done.';
-      pushHistory({ ts: Date.now(), prompt, preset: activePreset, styleRef, model: activeModel, imageUrl: j.imageUrl });
+      pushHistory({ ts: Date.now(), prompt, preset: activePreset, renderStyle: activeRenderStyle, styleRef, model: activeModel, imageUrl: j.imageUrl });
     } catch (e) {
       status.className = 'sc-status err'; status.textContent = e.message;
       frame.innerHTML = 'No image yet';

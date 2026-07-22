@@ -60,6 +60,7 @@ export default async function handler(req, res) {
     },
     palette: brand.art?.palette || [],
     primaryStyle: brand.art?.primaryStyle || 'Photographic',
+    lineStyle: !!brand.art?.lineStyle,
     assets: brand.assets || {},
     // Preset labels drive the workshop pills. Prompts/hints stay
     // server-side — the agent APIs look content up by label.

@@ -312,8 +312,12 @@
         <div class="sc-eyebrow">Art direction</div>
         <div class="sc-field mono"><label>Primary image style (label on the client's Style toggle)</label>
           <input id="primary_style" placeholder="Photographic — or e.g. Watercolor, Illustration, 3D render"></div>
+        <label class="sc-row" style="gap: 10px; align-items: center; cursor: pointer;">
+          <input type="checkbox" id="line_style" style="width:16px; height:16px;">
+          <span class="sc-eyebrow" style="text-transform:none; letter-spacing:0; font-family:var(--font-display); font-size:14px; color:var(--sc-ink);">Also offer a "Line" drawing style</span>
+        </label>
         <div class="sc-eyebrow" style="text-transform:none; letter-spacing:0; font-family:var(--font-display); font-size:13px; color:var(--sc-mist);">
-          Names the brand's signature look — the first pill in the Art Director next to "Line drawing". The prompt behind it always comes from the Photography / Framing / Grade below. Leave blank for "Photographic".
+          The primary style names the brand's signature look; its prompt comes from the Photography / Framing / Grade below. Tick the box to add a second "Line" pill (CAD-style white linework on black). With one style, the client just sees a label; with two, they get a toggle.
         </div>
         <div class="sc-field"><label>Palette (comma-separated, e.g. black:#000000, signal:#FF0000)</label>
           <input id="palette" placeholder="black:#000000, white:#FFFFFF, signal:#FF0000"></div>
@@ -678,6 +682,7 @@
     document.getElementById('voice_examples').value = (b.voice?.examples || []).join('\n');
     document.getElementById('voice_donot').value = (b.voice?.doNotUse || []).join('\n');
     document.getElementById('primary_style').value = b.art?.primaryStyle || '';
+    document.getElementById('line_style').checked = !!b.art?.lineStyle;
     document.getElementById('palette').value = (b.art?.palette || []).map(p => `${p.name}:${p.hex}`).join(', ');
     document.getElementById('photography').value = b.art?.photography || '';
     document.getElementById('framing').value = b.art?.framing || '';
@@ -733,6 +738,7 @@
       },
       art: {
         primaryStyle: document.getElementById('primary_style').value.trim(),
+        lineStyle: document.getElementById('line_style').checked,
         palette: parsePalette(document.getElementById('palette').value),
         photography: document.getElementById('photography').value.trim(),
         framing: document.getElementById('framing').value.trim(),

@@ -98,6 +98,7 @@ export default async function handler(req, res) {
     },
     art: {
       primaryStyle: b.art?.primaryStyle || existing?.art?.primaryStyle || '',
+      lineStyle: b.art?.lineStyle ?? existing?.art?.lineStyle ?? false,
       palette: b.art?.palette || [],
       photography: b.art?.photography || '',
       framing: b.art?.framing || '',
